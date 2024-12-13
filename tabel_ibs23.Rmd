@@ -31,7 +31,7 @@ jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
 
 ## Matching Strata dan Menghapus Tambahan
 
-Matching strata ini adalah memasukkan kolom strata dari DPA24 ke STPIM23.
+Matching strata ini adalah memasukkan kolom strata dari DPA24 ke STPIM23. Adapun, menghapus tambahan adalah menghapus baris yang status sampelnya "Tambahan".
 
 ```{r matching strata}
 stpim23 = stpim23 %>%
@@ -46,6 +46,31 @@ stpim23 = stpim23 %>%
 ## Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode Industri
 
 ```{r tabel 1.1}
+## KOLOM 2
+jum_kbli = jumlah[, 5:28]
+t_jum_kbli <- as.data.frame(t(jum_kbli))
 
+# Tambahkan kolom KBLI dengan judul kolom awal
+t_jum_kbli <- cbind(KBLI = rownames(t_jum_kbli), t_jum_kbli)
+
+# Reset nama kolom agar lebih rapi (opsional)
+colnames(t_jum_kbli) <- c("KBLI", paste0("Row", 1:(ncol(t_jum_kbli) - 1)))
+
+
+kolom2_tabel1 = t_jum_kbli %>%
+  select(KBLI = KBLI, Perusahaan = Row39)
+
+## KOLOM 3
+stpim23$KBLI <- substr(stpim23$r201_kode, 1, 2)
+
+kolom3_tabel1 <- stpim23 %>%
+  mutate(jumlah = r206a * weight) %>% 
+  group_by(KBLI) %>%                 
+  summarise(Tenaga_Kerja = sum(jumlah, na.rm = TRUE))
+
+## GABUNG
+tabel11_kbli = kolom2_tabel1 %>%
+  left_join(kolom3_tabel1 %>% select(KBLI, Tenaga_Kerja), by = "KBLI")
 ```
+
 
