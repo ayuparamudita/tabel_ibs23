@@ -1,5 +1,5 @@
 ---
-title: "tabel_ibs23"
+title: "Draf Tabel STPIM 2023"
 output: 
   html_document:
     toc: yes
@@ -89,6 +89,31 @@ total_1_1 = data.frame(
 
 # Tambahkan baris baru ke Tabel 1.1
 tabel1_1_kbli = rbind(tabel1_1_kbli, total_1_1)
+```
+
+## Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut Provinsi
+
+```{r tabel 1.2}
+## KOLOM 2
+kolom2_tabel1_2 = jumlah |>
+  mutate(Provinsi = if_else(Provinsi == "Grand Total", "Total", Provinsi)) |>
+  select(Provinsi = Provinsi, Perusahaan = `Grand Total`)
+  
+## KOLOM 3
+kolom3_tabel1_2 <- stpim23 |>
+  group_by(prov) |>                 
+  summarise(Tenaga_Kerja = sum(r206a * weight, na.rm = TRUE)) |>
+  rename(Provinsi = prov)
+
+## GABUNG
+tabel1_2_prov <- kolom2_tabel1_2 |>
+  left_join(kolom3_tabel1_2, by = "Provinsi") |>
+  mutate(
+    Tenaga_Kerja = if_else(is.na(Tenaga_Kerja), sum(Tenaga_Kerja, na.rm = TRUE), Tenaga_Kerja)
+  )
+
+knitr::kable(tabel1_2_prov)
+
 ```
 
 ## Tabel 2.1 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Kode Industri

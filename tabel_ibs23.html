@@ -1572,21 +1572,298 @@ border-radius: 0px;
 </div>
 
 
-<div id="welkom-putri" class="section level2">
-<h2>Welkom, Putri!</h2>
-</div>
-<div id="lalalaland" class="section level2">
-<h2>Lalalaland</h2>
-</div>
-<div id="r-markdown" class="section level1">
-<h1>### R Markdown</h1>
 <div id="pendahuluan" class="section level2">
 <h2>Pendahuluan</h2>
 <p>Berikut ini adalah kode untuk membuat tabulasi Rantab STPIM 2023.
 Jumlah tabel yang akan dihasilkan adalah sebanyak 12 tabel.</p>
-<p>Mari kita coba lagi</p>
-<pre class="r"><code>library()</code></pre>
+<pre class="r"><code>library(readxl)
+library(dplyr)</code></pre>
 </div>
+<div id="input-data" class="section level2">
+<h2>Input Data</h2>
+<pre class="r"><code>stpim23 = read_excel(&quot;STPIM (CAWI) NASIONAL tahun 2024.xlsx&quot;)
+dpa24 = read_excel(&quot;DPA (CAPI) NASIONAL tahun 2024.xlsx&quot;)
+jumlah = read_excel(&quot;Jumlah Populasi STPIM dan SKIM 2023.xlsx&quot;)</code></pre>
+</div>
+<div id="matching-strata-dan-menghapus-tambahan" class="section level2">
+<h2>Matching Strata dan Menghapus Tambahan</h2>
+<p>Matching strata ini adalah memasukkan kolom strata dari DPA24 ke
+STPIM23. Adapun, menghapus tambahan adalah menghapus baris yang status
+sampelnya “Tambahan”.</p>
+<pre class="r"><code>stpim23 = stpim23 %&gt;%
+  left_join(dpa24 %&gt;% select(kip, strata), by = &quot;kip&quot;)</code></pre>
+<pre class="r"><code>stpim23 = stpim23 %&gt;%
+  filter(status_sampel != &quot;T&quot;)</code></pre>
+</div>
+<div id="tabel-1.1-jumlah-perusahaan-dan-banyaknya-pekerja-menurut-kode-industri" class="section level2">
+<h2>Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode
+Industri</h2>
+<pre class="r"><code>jum_kbli = jumlah[, 5:28]
+t_jum_kbli &lt;- as.data.frame(t(jum_kbli))
+
+# Tambahkan kolom KBLI dengan judul kolom awal
+t_jum_kbli &lt;- cbind(KBLI = rownames(t_jum_kbli), t_jum_kbli)
+
+# Reset nama kolom agar lebih rapi (opsional)
+colnames(t_jum_kbli) &lt;- c(&quot;KBLI&quot;, paste0(&quot;Row&quot;, 1:(ncol(t_jum_kbli) - 1)))
+
+# Ambil kolom KBLI dan Total
+kolom2_tabel1_1 = t_jum_kbli %&gt;%
+  select(KBLI = KBLI, Perusahaan = Row39)</code></pre>
+<pre class="r"><code>stpim23$KBLI = substr(stpim23$r201_kode, 1, 2)
+
+kolom3_tabel1_1 = stpim23 %&gt;%
+  mutate(jumlah = r206a * weight) %&gt;% 
+  group_by(KBLI) %&gt;%                 
+  summarise(Tenaga_Kerja = sum(jumlah, na.rm = TRUE))</code></pre>
+<pre class="r"><code>tabel1_1_kbli = kolom2_tabel1_1 %&gt;%
+  left_join(kolom3_tabel1_1 %&gt;% select(KBLI, Tenaga_Kerja), by = &quot;KBLI&quot;)</code></pre>
+<p>Setelah itu, menambahkan baris Total</p>
+<pre class="r"><code># Hitung total untuk Kol2 dan Kol3
+total_Perusahaan = sum(tabel1_1_kbli$Perusahaan, na.rm = TRUE)
+total_Tenaga_Kerja = sum(tabel1_1_kbli$Tenaga_Kerja, na.rm = TRUE)
+
+# Buat baris baru
+total_1_1 = data.frame(
+  KBLI = &quot;Total&quot;,
+  Perusahaan = total_Perusahaan,
+  Tenaga_Kerja = total_Tenaga_Kerja)
+
+# Tambahkan baris baru ke Tabel 1.1
+tabel1_1_kbli = rbind(tabel1_1_kbli, total_1_1)</code></pre>
+</div>
+<div id="tabel-1.2-jumlah-perusahaan-dan-banyaknya-pekerja-menurut-provinsi" class="section level2">
+<h2>Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut
+Provinsi</h2>
+<pre class="r"><code>## KOLOM 2
+kolom2_tabel1_2 = jumlah |&gt;
+  mutate(Provinsi = if_else(Provinsi == &quot;Grand Total&quot;, &quot;Total&quot;, Provinsi)) |&gt;
+  select(Provinsi = Provinsi, Perusahaan = `Grand Total`)
+  
+## KOLOM 3
+kolom3_tabel1_2 &lt;- stpim23 |&gt;
+  group_by(prov) |&gt;                 
+  summarise(Tenaga_Kerja = sum(r206a * weight, na.rm = TRUE)) |&gt;
+  rename(Provinsi = prov)
+
+## GABUNG
+tabel1_2_prov &lt;- kolom2_tabel1_2 |&gt;
+  left_join(kolom3_tabel1_2, by = &quot;Provinsi&quot;) |&gt;
+  mutate(
+    Tenaga_Kerja = if_else(is.na(Tenaga_Kerja), sum(Tenaga_Kerja, na.rm = TRUE), Tenaga_Kerja)
+  )
+
+knitr::kable(tabel1_2_prov)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Provinsi</th>
+<th align="right">Perusahaan</th>
+<th align="right">Tenaga_Kerja</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">11</td>
+<td align="right">101</td>
+<td align="right">9546</td>
+</tr>
+<tr class="even">
+<td align="left">12</td>
+<td align="right">1257</td>
+<td align="right">169043</td>
+</tr>
+<tr class="odd">
+<td align="left">13</td>
+<td align="right">217</td>
+<td align="right">35399</td>
+</tr>
+<tr class="even">
+<td align="left">14</td>
+<td align="right">389</td>
+<td align="right">88529</td>
+</tr>
+<tr class="odd">
+<td align="left">15</td>
+<td align="right">185</td>
+<td align="right">30021</td>
+</tr>
+<tr class="even">
+<td align="left">16</td>
+<td align="right">309</td>
+<td align="right">80097</td>
+</tr>
+<tr class="odd">
+<td align="left">17</td>
+<td align="right">76</td>
+<td align="right">12565</td>
+</tr>
+<tr class="even">
+<td align="left">18</td>
+<td align="right">410</td>
+<td align="right">91301</td>
+</tr>
+<tr class="odd">
+<td align="left">19</td>
+<td align="right">144</td>
+<td align="right">22293</td>
+</tr>
+<tr class="even">
+<td align="left">21</td>
+<td align="right">708</td>
+<td align="right">206866</td>
+</tr>
+<tr class="odd">
+<td align="left">31</td>
+<td align="right">1547</td>
+<td align="right">92264</td>
+</tr>
+<tr class="even">
+<td align="left">32</td>
+<td align="right">8735</td>
+<td align="right">1359429</td>
+</tr>
+<tr class="odd">
+<td align="left">33</td>
+<td align="right">4551</td>
+<td align="right">1040105</td>
+</tr>
+<tr class="even">
+<td align="left">34</td>
+<td align="right">586</td>
+<td align="right">83885</td>
+</tr>
+<tr class="odd">
+<td align="left">35</td>
+<td align="right">6372</td>
+<td align="right">1017789</td>
+</tr>
+<tr class="even">
+<td align="left">36</td>
+<td align="right">3788</td>
+<td align="right">401891</td>
+</tr>
+<tr class="odd">
+<td align="left">51</td>
+<td align="right">456</td>
+<td align="right">41873</td>
+</tr>
+<tr class="even">
+<td align="left">52</td>
+<td align="right">211</td>
+<td align="right">11600</td>
+</tr>
+<tr class="odd">
+<td align="left">53</td>
+<td align="right">75</td>
+<td align="right">2078</td>
+</tr>
+<tr class="even">
+<td align="left">61</td>
+<td align="right">242</td>
+<td align="right">67901</td>
+</tr>
+<tr class="odd">
+<td align="left">62</td>
+<td align="right">167</td>
+<td align="right">20139</td>
+</tr>
+<tr class="even">
+<td align="left">63</td>
+<td align="right">230</td>
+<td align="right">45871</td>
+</tr>
+<tr class="odd">
+<td align="left">64</td>
+<td align="right">285</td>
+<td align="right">82373</td>
+</tr>
+<tr class="even">
+<td align="left">65</td>
+<td align="right">40</td>
+<td align="right">12066</td>
+</tr>
+<tr class="odd">
+<td align="left">71</td>
+<td align="right">110</td>
+<td align="right">24569</td>
+</tr>
+<tr class="even">
+<td align="left">72</td>
+<td align="right">121</td>
+<td align="right">52521</td>
+</tr>
+<tr class="odd">
+<td align="left">73</td>
+<td align="right">526</td>
+<td align="right">51778</td>
+</tr>
+<tr class="even">
+<td align="left">74</td>
+<td align="right">141</td>
+<td align="right">16164</td>
+</tr>
+<tr class="odd">
+<td align="left">75</td>
+<td align="right">26</td>
+<td align="right">6120</td>
+</tr>
+<tr class="even">
+<td align="left">76</td>
+<td align="right">34</td>
+<td align="right">3295</td>
+</tr>
+<tr class="odd">
+<td align="left">81</td>
+<td align="right">38</td>
+<td align="right">5160</td>
+</tr>
+<tr class="even">
+<td align="left">82</td>
+<td align="right">35</td>
+<td align="right">1066</td>
+</tr>
+<tr class="odd">
+<td align="left">91</td>
+<td align="right">35</td>
+<td align="right">1308</td>
+</tr>
+<tr class="even">
+<td align="left">92</td>
+<td align="right">5</td>
+<td align="right">3736</td>
+</tr>
+<tr class="odd">
+<td align="left">94</td>
+<td align="right">19</td>
+<td align="right">8749</td>
+</tr>
+<tr class="even">
+<td align="left">95</td>
+<td align="right">7</td>
+<td align="right">20300</td>
+</tr>
+<tr class="odd">
+<td align="left">96</td>
+<td align="right">11</td>
+<td align="right">3146</td>
+</tr>
+<tr class="even">
+<td align="left">97</td>
+<td align="right">4</td>
+<td align="right">152</td>
+</tr>
+<tr class="odd">
+<td align="left">Total</td>
+<td align="right">32193</td>
+<td align="right">5222988</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="tabel-2.1-jumlah-perusahaan-dan-jenis-tenaga-kerja-menurut-kode-industri" class="section level2">
+<h2>Tabel 2.1 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Kode
+Industri</h2>
 </div>
 
 
