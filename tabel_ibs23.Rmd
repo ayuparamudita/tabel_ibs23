@@ -9,33 +9,43 @@ date: "2024-12-12"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-
-1+1
-2+2
-3+3
-4+4
-
-
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-
-## Welkom, Putri! 
-
-## Lalalaland
-
-### R Markdown
-
-okok lalaalal lallala
-=======
 ## Pendahuluan
 
 Berikut ini adalah kode untuk membuat tabulasi Rantab STPIM 2023. Jumlah tabel yang akan dihasilkan adalah sebanyak 12 tabel.
 
-Mari kita coba lagi
-
-```{r panggil_package}
-library()
+```{r package}
+library(readxl)
+library(dplyr)
 ```
 
+## Input Data
+
+```{r input data}
+stpim23 = read_excel("STPIM (CAWI) NASIONAL tahun 2024.xlsx")
+dpa24 = read_excel("DPA (CAPI) NASIONAL tahun 2024.xlsx")
+jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
+```
+
+## Matching Strata dan Menghapus Tambahan
+
+Matching strata ini adalah memasukkan kolom strata dari DPA24 ke STPIM23.
+
+```{r matching strata}
+stpim23 = stpim23 %>%
+  left_join(dpa24 %>% select(kip, strata), by = "kip")
+```
+
+```{r menghapus tambahan}
+stpim23 = stpim23 %>%
+  filter(status_sampel != "T")
+```
+
+## Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode Industri
+
+```{r tabel 1.1}
+
+```
 
