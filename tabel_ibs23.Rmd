@@ -57,20 +57,37 @@ t_jum_kbli <- cbind(KBLI = rownames(t_jum_kbli), t_jum_kbli)
 colnames(t_jum_kbli) <- c("KBLI", paste0("Row", 1:(ncol(t_jum_kbli) - 1)))
 
 
-kolom2_tabel1 = t_jum_kbli %>%
+kolom2_tabel1_1 = t_jum_kbli %>%
   select(KBLI = KBLI, Perusahaan = Row39)
 
 ## KOLOM 3
 stpim23$KBLI <- substr(stpim23$r201_kode, 1, 2)
 
-kolom3_tabel1 <- stpim23 %>%
+kolom3_tabel1_1 <- stpim23 %>%
   mutate(jumlah = r206a * weight) %>% 
   group_by(KBLI) %>%                 
   summarise(Tenaga_Kerja = sum(jumlah, na.rm = TRUE))
 
 ## GABUNG
-tabel11_kbli = kolom2_tabel1 %>%
-  left_join(kolom3_tabel1 %>% select(KBLI, Tenaga_Kerja), by = "KBLI")
+tabel1_1_kbli = kolom2_tabel1_1 %>%
+  left_join(kolom3_tabel1_1 %>% select(KBLI, Tenaga_Kerja), by = "KBLI")
 ```
 
+Setelah itu, menambahkan baris Total
+
+```{r tabel 1.1 total}
+# Hitung total untuk Kol2 dan Kol3
+total_Perusahaan = sum(tabel1_1_kbli$Perusahaan, na.rm = TRUE)
+total_Tenaga_Kerja = sum(tabel1_1_kbli$Tenaga_Kerja, na.rm = TRUE)
+
+# Buat baris baru
+total_1_1 <- data.frame(
+  KBLI = "Total",
+  Perusahaan = total_Perusahaan,
+  Tenaga_Kerja = total_Tenaga_Kerja
+)
+
+# Tambahkan baris baru ke Tabel 1.1
+tabel1_1_kbli <- rbind(tabel1_1_kbli, total_1_1)
+```
 
