@@ -1,8 +1,4 @@
 ---
-<<<<<<< HEAD
-title: "Draf Tabel IBS 2023"
-output: html_document
-=======
 title: "tabel_ibs23"
 output: 
   html_document:
@@ -10,7 +6,6 @@ output:
     toc_float: true
     code_folding: hide
 date: "2024-12-12"
->>>>>>> f48535dd45a772311787d0a72e3ce159d9367e40
 ---
 
 ```{r setup, include=FALSE}
@@ -19,16 +14,18 @@ knitr::opts_chunk$set(echo = TRUE)
 1+1
 ```
 
-<<<<<<< HEAD
+
 ## Welkom, Putri! 
+
+## Lalalaland
 
 ### R Markdown
 =======
 ## Pendahuluan
->>>>>>> f48535dd45a772311787d0a72e3ce159d9367e40
 
 Berikut ini adalah kode untuk membuat tabulasi Rantab STPIM 2023. Jumlah tabel yang akan dihasilkan adalah sebanyak 12 tabel.
 
+Mari kita coba lagi
 
 ```{r panggil_package}
 library()
