@@ -64,14 +64,14 @@ skim23_full = skim23_terpilih %>%
   select(names(stpim23))
 ```
 
-### Ketiga, lakukan penyesuaian tipe data kolom SKIM dengan STPIM
+### Ketiga, lakukan penyesuaian tipe data kolom SKIM supaya sama dengan STPIM
 
 ```{r penyesuaian tipe data}
 for (col in names(stpim23)) {
   if (col %in% names(skim23_full)) {
     # Cek tipe data di STPIM, lalu sesuaikan di SKIM
     if (class(stpim23[[col]]) != class(skim23_full[[col]])) {
-      skim23_full[[col]] <- as(skim23_full[[col]], class(stpim23[[col]]))
+      skim23_full[[col]] = as(skim23_full[[col]], class(stpim23[[col]]))
     }
   }
 }
