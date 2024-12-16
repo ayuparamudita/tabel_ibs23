@@ -1,0 +1,112 @@
+---
+title: "gabung skipm dan stpim"
+output: 
+  html_document:
+    toc: yes
+    toc_float: true
+    code_folding: hide
+date: "2024-12-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Pendahuluan
+
+Ini adalah file yang berisi kode untuk menggabungkan file export STPIM dan SKIM.
+
+```{r package}
+library(readxl)
+library(dplyr)
+library(openxlsx)
+```
+
+## Persiapan File STPIM
+
+```{r input data stpim}
+stpim23 = read_excel("STPIM (CAWI) NASIONAL tahun 2024.xlsx")
+```
+
+Pada tahapan persiapan ini, buat dulu kolom baru pada file stpim, yaitu kolom penjumlahan bahan baku & penolong *(r501k5_sum)*. Lalu, ganti nama variabel nilai produksi yang awalnya *r401a* menjadi *r503k6_sum*. Tujuannya adalah agar nama kolom bahan baku & penolong dan nilai produksi pada file STPIM sama dengan file SKIM.
+
+```{r r501k5_sum dan r503k6_sum}
+stpim23 = stpim23 %>%
+  mutate(r501k5_sum = r302a_1 + r302b_1)
+
+colnames(stpim23)[colnames(stpim23) == "r401a"] <- "r503k6_sum"
+```
+
+## Persiapan File SKIM
+
+```{r input data skim}
+skim23 = read_excel("SKIM.IIADetail NASIONAL tahun 2024.xlsx")
+```
+
+## Menggabungkan File STPIM dan SKIM
+
+### Pertama, pilih dulu kolom dari SKIM yang sama dengan STPIM
+
+```{r pilih kolom skim}
+skim23_terpilih = skim23 %>%
+  select(all_of(intersect(names(stpim23), names(skim23))))
+```
+
+### Kedua, masukkan kolom dari STPIM yang tidak ada di SKIM dengan nilai NA
+
+```{r masukkan kolom stpim}
+missing_columns = setdiff(names(stpim23), names(skim23_terpilih))
+for (col in missing_columns) {
+  skim23_terpilih[[col]] = NA
+}
+
+skim23_full = skim23_terpilih %>%
+  select(names(stpim23))
+```
+
+### Ketiga, lakukan penyesuaian tipe data kolom SKIM dengan STPIM
+
+```{r penyesuaian tipe data}
+for (col in names(stpim23)) {
+  if (col %in% names(skim23_full)) {
+    # Cek tipe data di STPIM, lalu sesuaikan di SKIM
+    if (class(stpim23[[col]]) != class(skim23_full[[col]])) {
+      skim23_full[[col]] <- as(skim23_full[[col]], class(stpim23[[col]]))
+    }
+  }
+}
+```
+
+### Keempat, menggabungkan file STPIM dan SKIM
+
+```{r gabung stpim dan skim}
+stpim_skim = bind_rows(stpim23, skim23_full)
+```
+
+### Kelima, bagi dulu nilai tambah dengan 1.000
+
+```{r bagi ntb dengan 1000}
+stpim_skim = stpim_skim %>%
+  mutate(nilai_tambah = nilai_tambah /1000)
+```
+
+## Mengecek apakah ada KIP Duplikat
+
+```{r cek kip duplikat}
+kip_duplikat = stpim_skim %>%
+  filter(duplicated(kip) | duplicated(kip, fromLast = TRUE))
+
+print(kip_duplikat)
+```
+```{r export kip duplikar}
+if (nrow(kip_duplikat) > 0) {
+  write.xlsx(kip_duplikat, "duplikat_id.xlsx")
+}
+```
+
+## Export File Gabungan
+
+```{r export file}
+write.xlsx(stpim_skim, "SKIM-STPIM.xlsx")
+```
+
