@@ -196,9 +196,16 @@ kable(tabel5_2_prov, align = "r")
 
 ```
 
-## Tabel 6.2 Nilai Output menurut Provinsi, 2023
+## Tabel 6.2 Nilai Tambah menurut Provinsi, 2023
 
 ```{r tabel 6.2}
+## KOLOM 2-6 NILAI TAMBAH
+kolom2_6_tabel6_2 <- stpim23 |>
+  group_by(prov) |>                 
+  mutate(
+    Total_Output    = tabel5_2_prov$Total_Output)
+
+
 
 
 ```
