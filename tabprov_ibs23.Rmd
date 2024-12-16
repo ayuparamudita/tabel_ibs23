@@ -27,6 +27,7 @@ library(knitr)
 
 ```{r input data}
 stpim23 = read_excel("STPIM (CAWI) NASIONAL tahun 2024.xlsx")
+# stpim23 = read_excel("SKIM-STPIM.xlsx")
 dpa24 = read_excel("DPA (CAPI) NASIONAL tahun 2024.xlsx")
 jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
 ```
@@ -202,10 +203,36 @@ kable(tabel5_2_prov, align = "r")
 ## KOLOM 2-6 NILAI TAMBAH
 kolom2_6_tabel6_2 <- stpim23 |>
   group_by(prov) |>                 
+  summarise(
+    Total_Input         = sum((r302a_1 + r302b_1 + r303a + r304c + r305a + r311 + r312 + r313) * weight, na.rm = TRUE),
+    Total_Output        = sum((r401a + r403a + r404a + r404b + r404c + r404d + r404f + (r406b - r406a)) * weight, na.rm = TRUE),
+    Nilai_Tambah_psr    = Total_Output - Total_Input,
+    Pajak               = sum(r306 * weight, na.rm = TRUE),
+    Nilai_Tambah        = Nilai_Tambah_psr - Pajak) |>
+    rename(Provinsi = prov)
+    
+# BUAT BARIS TOTAL BARU
+total_row_tabel6_2 <- data.frame(
+  Provinsi = "Total",
+  Total_Input       = sum(kolom2_6_tabel6_2$Total_Input, na.rm = TRUE),
+  Total_Output      = sum(kolom2_6_tabel6_2$Total_Output, na.rm = TRUE),
+  Nilai_Tambah_psr  = sum(kolom2_6_tabel6_2$Nilai_Tambah_psr, na.rm = TRUE),
+  Pajak             = sum(kolom2_6_tabel6_2$Pajak, na.rm = TRUE),
+  Nilai_Tambah      = sum(kolom2_6_tabel6_2$Nilai_Tambah, na.rm = TRUE))
+
+# TAMBAHKAN BARIS BARU KE TABEL 5.2
+tabel6_2_prov = rbind(kolom2_6_tabel6_2, total_row_tabel6_2)
+
+# SEPARATOR RIBUAN
+tabel6_2_prov <- tabel6_2_prov |> 
   mutate(
-    Total_Output    = tabel5_2_prov$Total_Output)
+    across(
+      .cols = c(Total_Input, Total_Output, Nilai_Tambah_psr, 
+                Pajak, Nilai_Tambah), 
+      .fns = ~ scales::comma(., big.mark = ".")
+    )
+  )
 
-
-
+kable(tabel6_2_prov, align = "r")
 
 ```
