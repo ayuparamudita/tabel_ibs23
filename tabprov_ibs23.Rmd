@@ -19,6 +19,8 @@ Berikut ini adalah kode untuk membuat tabulasi Rantab STPIM 2023. Jumlah tabel y
 ```{r package}
 library(readxl)
 library(dplyr)
+library(scales)
+library(knitr)
 ```
 
 ## Input Data
@@ -71,8 +73,8 @@ knitr::kable(tabel1_2_prov)
 ## Tabel 2.2 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Provinsi, 2023
 
 ```{r tabel 2.2}
-## KOLOM 3-8
-kolom3_tabel2_2 <- stpim23 |>
+## KOLOM 3-10
+kolom3_10_tabel2_2 <- stpim23 |>
   group_by(prov) |>                 
   summarise(Tenaga_Kerja_L        = sum(r206b_1 * weight, na.rm = TRUE),        # KOLOM 3
             Tenaga_Kerja_P        = sum(r206b_2 * weight, na.rm = TRUE),        # KOLOM 4
@@ -81,12 +83,12 @@ kolom3_tabel2_2 <- stpim23 |>
             Tenaga_Kerja_Lain     = sum(r206c_2 * weight, na.rm = TRUE),        # KOLOM 7
             Tenaga_Kerja_sumPrdLn = Tenaga_Kerja_Prod + Tenaga_Kerja_Lain,      # KOLOM 8
             Tenaga_Kerja_Asi      = sum(r206d * weight, na.rm = TRUE)) |>       # KOLOM 9
-  mutate(Tenaga_Kerja_Sum = kolom3_tabel1_2$Tenaga_Kerja) |>                        # KOLOM 10
+  mutate(Tenaga_Kerja_Sum = kolom3_tabel1_2$Tenaga_Kerja) |>                    # KOLOM 10
   rename(Provinsi = prov)
 
-## GABUNG
+## GABUNG KOLOM 2-10
 tabel2_2_prov <- kolom2_tabel1_2 |>
-  left_join(kolom3_tabel2_2, by = "Provinsi") |>
+  left_join(kolom3_10_tabel2_2, by = "Provinsi") |>
   mutate(
     across(                                                      # SUM TOTAL COL Tenaga_Kerja_.
       .cols = starts_with("Tenaga_Kerja"), 
@@ -95,5 +97,108 @@ tabel2_2_prov <- kolom2_tabel1_2 |>
   )
 
 knitr::kable(tabel2_2_prov)
+
+```
+
+## Tabel 3.2 Pengeluaran untuk Pekerja menurut Provinsi dan Jenis Pengeluaran, 2023
+
+```{r tabel 3.2}
+## KOLOM 2-8 PENGELUARAN PEKERJA
+kolom2_8_tabel3_2 <- stpim23 |>
+  group_by(prov) |>                 
+  summarise(
+    Upah_Prod          = sum(r301a_1 * weight, na.rm = TRUE),
+    PengPekLain_Prod   = sum(r301a_2 * weight, na.rm = TRUE),
+    TotalPengPek_Prod  = Upah_Prod + PengPekLain_Prod,
+    Upah_Lain          = sum(r301b_3 * weight, na.rm = TRUE),
+    PengPekLain_Lain   = sum(r301b_4 * weight, na.rm = TRUE),
+    TotalPengPek_Lain  = Upah_Lain + PengPekLain_Lain,
+    TotalPengPek       = sum(r301c * weight, na.rm = TRUE)
+  ) |>
+  rename(Provinsi = prov)
+
+# BUAT BARIS TOTAL BARU
+total_row_tabel3_2 <- data.frame(
+  Provinsi = "Total",
+  Upah_Prod           = sum(kolom2_8_tabel3_2$Upah_Prod, na.rm = TRUE),
+  PengPekLain_Prod    = sum(kolom2_8_tabel3_2$PengPekLain_Prod, na.rm = TRUE),
+  TotalPengPek_Prod   = sum(kolom2_8_tabel3_2$TotalPengPek_Prod, na.rm = TRUE),
+  Upah_Lain           = sum(kolom2_8_tabel3_2$Upah_Lain, na.rm = TRUE),
+  PengPekLain_Lain    = sum(kolom2_8_tabel3_2$PengPekLain_Lain, na.rm = TRUE),
+  TotalPengPek_Lain   = sum(kolom2_8_tabel3_2$TotalPengPek_Lain, na.rm = TRUE),
+  TotalPengPek        = sum(kolom2_8_tabel3_2$TotalPengPek, na.rm = TRUE))
+
+# TAMBAHKAN BARIS BARU KE TABEL 3.2
+tabel3_2_prov = rbind(kolom2_8_tabel3_2, total_row_tabel3_2)
+
+# SEPARATOR RIBUAN
+tabel3_2_prov <- tabel3_2_prov |> 
+  mutate(
+    across(
+      .cols = c(Upah_Prod, PengPekLain_Prod, TotalPengPek_Prod, 
+                Upah_Lain, PengPekLain_Lain, TotalPengPek_Lain, 
+                TotalPengPek), 
+      .fns = ~ scales::comma(., big.mark = ".")
+    )
+  )
+
+kable(tabel3_2_prov, align = "r")
+
+```
+
+## Tabel 4.2 Biaya Input menurut Provinsi, 2023
+
+```{r tabel 4.2}
+
+
+
+```
+
+## Tabel 5.2 Nilai Output menurut Provinsi, 2023
+
+```{r tabel 5.2}
+## KOLOM 2-7 NILAI OUTPUT
+kolom2_7_tabel5_2 <- stpim23 |>
+  group_by(prov) |>                 
+  summarise(
+    Barang_Prod    = sum(r401a * weight, na.rm = TRUE),
+    Listrik_Prod   = sum(r404d * weight, na.rm = TRUE),
+    Jasa_Prod      = sum(r403a * weight, na.rm = TRUE),
+    Selisih_Stok   = sum((r406b - r406a) * weight, na.rm = TRUE),
+    Output_Lain    = sum((r404a + r404b + r404c + r404f) * weight, na.rm = TRUE), 
+    Total_Output   = Barang_Prod + Listrik_Prod + Jasa_Prod + Selisih_Stok +  Output_Lain ) |>
+  rename(Provinsi = prov)
+
+# BUAT BARIS TOTAL BARU
+total_row_tabel5_2 <- data.frame(
+  Provinsi = "Total",
+  Barang_Prod      = sum(kolom2_7_tabel5_2$Barang_Prod, na.rm = TRUE),
+  Listrik_Prod     = sum(kolom2_7_tabel5_2$Listrik_Prod, na.rm = TRUE),
+  Jasa_Prod        = sum(kolom2_7_tabel5_2$Jasa_Prod, na.rm = TRUE),
+  Selisih_Stok     = sum(kolom2_7_tabel5_2$Selisih_Stok, na.rm = TRUE),
+  Output_Lain      = sum(kolom2_7_tabel5_2$Output_Lain, na.rm = TRUE),
+  Total_Output     = sum(kolom2_7_tabel5_2$Total_Output, na.rm = TRUE))
+
+# TAMBAHKAN BARIS BARU KE TABEL 5.2
+tabel5_2_prov = rbind(kolom2_7_tabel5_2, total_row_tabel5_2)
+
+# SEPARATOR RIBUAN
+tabel5_2_prov <- tabel5_2_prov |> 
+  mutate(
+    across(
+      .cols = c(Barang_Prod, Listrik_Prod, Jasa_Prod, 
+                Selisih_Stok, Output_Lain, Total_Output), 
+      .fns = ~ scales::comma(., big.mark = ".")
+    )
+  )
+
+kable(tabel5_2_prov, align = "r")
+
+```
+
+## Tabel 6.2 Nilai Output menurut Provinsi, 2023
+
+```{r tabel 6.2}
+
 
 ```
