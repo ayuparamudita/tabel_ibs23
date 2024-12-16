@@ -1,0 +1,99 @@
+---
+title: "Draf Tabel STPIM 2023"
+output: 
+  html_document:
+    toc: yes
+    toc_float: true
+    code_folding: hide
+date: "2024-12-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+## Pendahuluan
+
+Berikut ini adalah kode untuk membuat tabulasi Rantab STPIM 2023. Jumlah tabel yang akan dihasilkan adalah sebanyak 12 tabel.
+
+```{r package}
+library(readxl)
+library(dplyr)
+```
+
+## Input Data
+
+```{r input data}
+stpim23 = read_excel("STPIM (CAWI) NASIONAL tahun 2024.xlsx")
+dpa24 = read_excel("DPA (CAPI) NASIONAL tahun 2024.xlsx")
+jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
+```
+
+## Matching Strata dan Menghapus Tambahan
+
+Matching strata ini adalah memasukkan kolom strata dari DPA24 ke STPIM23. Adapun, menghapus tambahan adalah menghapus baris yang status sampelnya "Tambahan".
+
+```{r matching strata}
+stpim23 = stpim23 %>%
+  left_join(dpa24 %>% select(kip, strata), by = "kip")
+```
+
+```{r menghapus tambahan}
+stpim23 = stpim23 %>%
+  filter(status_sampel != "T")
+```
+
+## Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut Provinsi, 2023
+
+```{r tabel 1.2}
+## KOLOM 2
+kolom2_tabel1_2 = jumlah |>
+  mutate(Provinsi = if_else(Provinsi == "Grand Total", "Total", Provinsi)) |>
+  select(Provinsi = Provinsi, Perusahaan = `Grand Total`)
+  
+## KOLOM 3
+kolom3_tabel1_2 <- stpim23 |>
+  group_by(prov) |>                 
+  summarise(Tenaga_Kerja = sum(r206a * weight, na.rm = TRUE)) |>
+  rename(Provinsi = prov)
+
+## GABUNG
+tabel1_2_prov <- kolom2_tabel1_2 |>
+  left_join(kolom3_tabel1_2, by = "Provinsi") |>
+  mutate(
+    Tenaga_Kerja = if_else(is.na(Tenaga_Kerja), sum(Tenaga_Kerja, na.rm = TRUE), Tenaga_Kerja)
+  )
+
+knitr::kable(tabel1_2_prov)
+
+```
+
+## Tabel 2.2 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Provinsi, 2023
+
+```{r tabel 2.2}
+## KOLOM 3-8
+kolom3_tabel2_2 <- stpim23 |>
+  group_by(prov) |>                 
+  summarise(Tenaga_Kerja_L        = sum(r206b_1 * weight, na.rm = TRUE),        # KOLOM 3
+            Tenaga_Kerja_P        = sum(r206b_2 * weight, na.rm = TRUE),        # KOLOM 4
+            Tenaga_Kerja_sumLP    = Tenaga_Kerja_L + Tenaga_Kerja_P,            # KOLOM 5
+            Tenaga_Kerja_Prod     = sum(r206c_1 * weight, na.rm = TRUE),        # KOLOM 6
+            Tenaga_Kerja_Lain     = sum(r206c_2 * weight, na.rm = TRUE),        # KOLOM 7
+            Tenaga_Kerja_sumPrdLn = Tenaga_Kerja_Prod + Tenaga_Kerja_Lain,      # KOLOM 8
+            Tenaga_Kerja_Asi      = sum(r206d * weight, na.rm = TRUE)) |>       # KOLOM 9
+  mutate(Tenaga_Kerja_Sum = kolom3_tabel1_2$Tenaga_Kerja) |>                        # KOLOM 10
+  rename(Provinsi = prov)
+
+## GABUNG
+tabel2_2_prov <- kolom2_tabel1_2 |>
+  left_join(kolom3_tabel2_2, by = "Provinsi") |>
+  mutate(
+    across(                                                      # SUM TOTAL COL Tenaga_Kerja_.
+      .cols = starts_with("Tenaga_Kerja"), 
+      .fns = ~ if_else(is.na(.), sum(., na.rm = TRUE), .)
+    )
+  )
+
+knitr::kable(tabel2_2_prov)
+
+```
