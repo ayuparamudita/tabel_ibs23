@@ -204,7 +204,7 @@ kable(tabel5_2_prov, align = "r")
 kolom2_6_tabel6_2 <- stpim23 |>
   group_by(prov) |>                 
   summarise(
-    Total_Input         = sum((r302a_1 + r302b_1 + r303a + r304c + r305a + r311 + r312 + r313) * weight, na.rm = TRUE),
+    Total_Input         = sum((r302a_1 + r302b_1 + r303a + r304c + r305a + r311 + r312 + r313) * weight, na.rm = TRUE),  # SESUAIKAN DENGAN FILE BARU
     Total_Output        = sum((r401a + r403a + r404a + r404b + r404c + r404d + r404f + (r406b - r406a)) * weight, na.rm = TRUE),
     Nilai_Tambah_psr    = Total_Output - Total_Input,
     Pajak               = sum(r306 * weight, na.rm = TRUE),
