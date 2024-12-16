@@ -24,7 +24,7 @@ library(dplyr)
 ## Input Data
 
 ```{r input data}
-stpim23 = read_excel("STPIM (CAWI) NASIONAL tahun 2024.xlsx")
+stpim23 = read_excel("SKIM-STPIM.xlsx")
 dpa24 = read_excel("DPA (CAPI) NASIONAL tahun 2024.xlsx")
 jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
 ```
