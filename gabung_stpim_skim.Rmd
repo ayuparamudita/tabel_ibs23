@@ -133,6 +133,7 @@ kip_duplikat = stpim_skim %>%
 
 print(kip_duplikat)
 ```
+
 ```{r export kip duplikar}
 if (nrow(kip_duplikat) > 0) {
   write.xlsx(kip_duplikat, "duplikat_id.xlsx")
@@ -151,6 +152,8 @@ stpim_skim_clean <- stpim_skim %>%
   filter(!(duplicated(kip) & is.na(tindak_lanjut_desk))) %>%
   ungroup()
 ```
+
+*Jadi, awalnya SKIM ada 3305. Dikarenakan duplikat maka menjadi 3300*
 
 
 ## Export File Gabungan
