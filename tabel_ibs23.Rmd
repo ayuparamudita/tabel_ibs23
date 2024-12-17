@@ -284,7 +284,7 @@ kable(tabel5_1_kbli, align = "r")
 ```{r tabel 6.1 kolom 2-6 kbli}
 kolom2_6_tabel6_1_kbli = stpim23 %>%
   group_by(KBLI) %>%
-  summarise(Total_Input         = sum((r302a_1 + r302b_1 + r303a + r304c + r305a + r311 + r312 + r313) * weight, na.rm = TRUE),
+  summarise(Total_Input         = sum((r501k5_sum + r303a + r304c + r305a + r311 + r312 + r313) * weight, na.rm = TRUE),
             Total_Output        = sum((r503k6_sum + r403a + r404a + r404b + r404c + r404d + r404f + (r406b - r406a)) * weight, na.rm = TRUE),
             Nilai_Tambah_psr    = Total_Output - Total_Input,
             Pajak               = sum(r306 * weight, na.rm = TRUE),
