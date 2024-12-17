@@ -66,7 +66,7 @@ Setelah itu, menambahkan baris Total
 ```{r tabel 1.1 baris total kbli}
 # Buat baris baru
 total_1_1_kbli = data.frame(
-  KBLI         = "INDONESIA",
+  KBLI         = "Total",
   Perusahaan   = sum(tabel1_1_kbli$Perusahaan, na.rm = TRUE),
   Tenaga_Kerja = sum(tabel1_1_kbli$Tenaga_Kerja, na.rm = TRUE))
 
@@ -118,7 +118,7 @@ Setelah itu, menambahkan baris Total
 ```{r tabel 2.1 baris total kbli}
 # Buat baris baru
 total_2_1_kbli = data.frame(
-  KBLI                  = "INDONESIA",
+  KBLI                  = "Total",
   Perusahaan            = total_1_1_kbli$Perusahaan,
   Tenaga_Kerja_L        = sum(tabel2_1_kbli$Tenaga_Kerja_L, na.rm = TRUE),
   Tenaga_Kerja_P        = sum(tabel2_1_kbli$Tenaga_Kerja_P, na.rm = TRUE),
@@ -165,7 +165,7 @@ Setelah itu, menambahkan baris Total
 ```{r tabel 3.1 baris total kbli}
 # Buat baris baru
 total_3_1_kbli = data.frame(
-  KBLI              = "INDONESIA",
+  KBLI              = "Total",
   Upah_Prod         = sum(kolom2_8_tabel3_1_kbli$Upah_Prod, na.rm = TRUE),
   PengPekLain_Prod  = sum(kolom2_8_tabel3_1_kbli$PengPekLain_Prod, na.rm = TRUE),
   TotalPengPek_Prod = sum(kolom2_8_tabel3_1_kbli$TotalPengPek_Prod, na.rm = TRUE),
@@ -210,7 +210,7 @@ Setelah itu, menambahkan baris Total
 ```{r tabel 4.1 baris total kbli}
 # Buat baris baru
 total_4_1_kbli = data.frame(
-  KBLI              = "INDONESIA",
+  KBLI              = "Total",
   BB_Penolong       = sum(kolom2_7_tabel4_1_kbli$BB_Penolong, na.rm = TRUE),
   Bakar_Listrik     = sum(kolom2_7_tabel4_1_kbli$Bakar_Listrik, na.rm = TRUE),
   Sewa_Gedung_Mesin = sum(kolom2_7_tabel4_1_kbli$Sewa_Gedung_Mesin, na.rm = TRUE),
@@ -254,7 +254,7 @@ Setelah itu, menambahkan baris Total
 ```{r tabel 5.1 baris total kbli}
 # Buat baris baru
 total_5_1_kbli = data.frame(
-  KBLI              = "INDONESIA",
+  KBLI              = "Total",
   Barang_Prod      = sum(kolom2_7_tabel5_1_kbli$Barang_Prod, na.rm = TRUE),
   Listrik_Prod     = sum(kolom2_7_tabel5_1_kbli$Listrik_Prod, na.rm = TRUE),
   Jasa_Prod        = sum(kolom2_7_tabel5_1_kbli$Jasa_Prod, na.rm = TRUE),
@@ -297,7 +297,7 @@ Setelah itu, menambahkan baris Total
 ```{r tabel 6.1 baris total kbli}
 # Buat baris baru
 total_6_1_kbli = data.frame(
-  KBLI              = "INDONESIA",
+  KBLI              = "Total",
   Total_Input       = sum(kolom2_6_tabel6_1_kbli$Total_Input, na.rm = TRUE),
   Total_Output      = sum(kolom2_6_tabel6_1_kbli$Total_Output, na.rm = TRUE),
   Nilai_Tambah_psr  = sum(kolom2_6_tabel6_1_kbli$Nilai_Tambah_psr, na.rm = TRUE),
@@ -326,22 +326,28 @@ kable(tabel6_1_kbli, align = "r")
 wb = createWorkbook()
 
 addWorksheet(wb, "Tabel 1.1")
-writeData(wb, "Tabel 1.1", tabel1_1_kbli)
+writeData(wb, "Tabel 1.1", "Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode Industri, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 1.1", tabel1_1_kbli, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 2.1")
-writeData(wb, "Tabel 2.1", tabel2_1_kbli)
+writeData(wb, "Tabel 2.1", "Tabel 2.1 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Kode Industri, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 2.1", tabel2_1_kbli, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 3.1")
-writeData(wb, "Tabel 3.1", tabel3_1_kbli)
+writeData(wb, "Tabel 3.1", "Tabel 3.1 Pengeluaran untuk Pekerja menurut Kode Industri dan Jenis Pengeluaran, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 3.1", tabel3_1_kbli, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 4.1")
-writeData(wb, "Tabel 4.1", tabel4_1_kbli)
+writeData(wb, "Tabel 4.1", "Tabel 4.1 Biaya Input menurut Kode Industri, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 4.1", tabel4_1_kbli, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 5.1")
-writeData(wb, "Tabel 5.1", tabel5_1_kbli)
+writeData(wb, "Tabel 5.1", "Tabel 5.1 Nilai Output menurut Kode Industri, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 5.1", tabel5_1_kbli, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 6.1")
-writeData(wb, "Tabel 6.1", tabel6_1_kbli)
+writeData(wb, "Tabel 6.1", "Tabel 6.1 Nilai Tambah menurut Kode Industri, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 6.1", tabel6_1_kbli, startRow = 3, startCol = 1)
 
 # Menyimpan workbook ke file Excel
 saveWorkbook(wb, "Rantab STPIM.xlsx", overwrite = TRUE)
