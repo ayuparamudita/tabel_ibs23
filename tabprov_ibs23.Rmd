@@ -21,6 +21,7 @@ library(readxl)
 library(dplyr)
 library(scales)
 library(knitr)
+library(openxlsx)
 ```
 
 ## Input Data
@@ -35,7 +36,7 @@ jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
 ```{r tabel 1.2}
 ## KOLOM 2
 kolom2_tabel1_2 = jumlah |>
-  mutate(Provinsi = if_else(Provinsi == "Grand Total", "Total", Provinsi)) |>
+  mutate(Provinsi = if_else(Provinsi == "Grand Total", "Indonesia", Provinsi)) |>
   select(Provinsi = Provinsi, Perusahaan = `Grand Total`)
   
 ## KOLOM 3
@@ -79,7 +80,8 @@ tabel2_2_prov <- kolom2_tabel1_2 |>
       .cols = starts_with("Tenaga_Kerja"), 
       .fns = ~ if_else(is.na(.), sum(., na.rm = TRUE), .)
     )
-  )
+  ) |>
+  mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
 
 knitr::kable(tabel2_2_prov)
 
@@ -125,7 +127,9 @@ tabel3_2_prov <- tabel3_2_prov |>
                 TotalPengPek), 
       .fns = ~ scales::comma(., big.mark = ".")
     )
-  )
+  ) |>
+  mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
+
 
 kable(tabel3_2_prov, align = "r")
 
@@ -167,7 +171,9 @@ tabel4_2_prov <- tabel4_2_prov |>
                 Jasa_Input, Peng_Lain, Total_Input), 
       .fns = ~ scales::comma(., big.mark = ".")
     )
-  )
+  ) |>
+  mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
+
 
 kable(tabel4_2_prov, align = "r")
 
@@ -209,7 +215,9 @@ tabel5_2_prov <- tabel5_2_prov |>
                 Selisih_Stok, Output_Lain, Total_Output), 
       .fns = ~ scales::comma(., big.mark = ".")
     )
-  )
+  ) |>
+  mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
+
 
 kable(tabel5_2_prov, align = "r")
 
@@ -249,8 +257,37 @@ tabel6_2_prov <- tabel6_2_prov |>
                 Pajak, Nilai_Tambah), 
       .fns = ~ scales::comma(., big.mark = ".")
     )
-  )
+  ) |>
+  mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
+
 
 kable(tabel6_2_prov, align = "r")
 
+```
+
+## Export ke Excel
+
+```{r export tabel kbli ke excel}
+wb = createWorkbook()
+
+addWorksheet(wb, "Tabel 1.2")
+writeData(wb, "Tabel 1.2", tabel1_2_prov)
+
+addWorksheet(wb, "Tabel 2.2")
+writeData(wb, "Tabel 2.2", tabel2_2_prov)
+
+addWorksheet(wb, "Tabel 3.2")
+writeData(wb, "Tabel 3.2", tabel3_2_prov)
+
+addWorksheet(wb, "Tabel 4.2")
+writeData(wb, "Tabel 4.2", tabel4_2_prov)
+
+addWorksheet(wb, "Tabel 5.2")
+writeData(wb, "Tabel 5.2", tabel5_2_prov)
+
+addWorksheet(wb, "Tabel 6.2")
+writeData(wb, "Tabel 6.2", tabel6_2_prov)
+
+# Menyimpan workbook ke file Excel
+saveWorkbook(wb, "Rantab STPIM.xlsx", overwrite = TRUE)
 ```
