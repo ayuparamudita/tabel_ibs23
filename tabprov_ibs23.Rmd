@@ -26,24 +26,8 @@ library(knitr)
 ## Input Data
 
 ```{r input data}
-stpim23 = read_excel("STPIM (CAWI) NASIONAL tahun 2024.xlsx")
-# stpim23 = read_excel("SKIM-STPIM.xlsx")
-dpa24 = read_excel("DPA (CAPI) NASIONAL tahun 2024.xlsx")
+stpim23 = read_excel("SKIM-STPIM.xlsx")
 jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
-```
-
-## Matching Strata dan Menghapus Tambahan
-
-Matching strata ini adalah memasukkan kolom strata dari DPA24 ke STPIM23. Adapun, menghapus tambahan adalah menghapus baris yang status sampelnya "Tambahan".
-
-```{r matching strata}
-stpim23 = stpim23 %>%
-  left_join(dpa24 %>% select(kip, strata), by = "kip")
-```
-
-```{r menghapus tambahan}
-stpim23 = stpim23 %>%
-  filter(status_sampel != "T")
 ```
 
 ## Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut Provinsi, 2023
@@ -150,8 +134,42 @@ kable(tabel3_2_prov, align = "r")
 ## Tabel 4.2 Biaya Input menurut Provinsi, 2023
 
 ```{r tabel 4.2}
+## KOLOM 2-7 NILAI INPUT
+kolom2_7_tabel4_2 <- stpim23 |>
+  group_by(prov) |>                 
+  summarise(
+    Bahan_BakuPnl    = sum(r501k5_sum * weight, na.rm = TRUE),
+    Bakar_Listrik    = sum((r303a + r304c) * weight, na.rm = TRUE),
+    Sewa_Gd          = sum(r305a * weight, na.rm = TRUE),
+    Jasa_Input       = sum(r311 * weight, na.rm = TRUE),
+    Peng_Lain        = sum((r312 + r313) * weight, na.rm = TRUE),
+    Total_Input      = Bahan_BakuPnl + Bakar_Listrik + Sewa_Gd + Jasa_Input + Peng_Lain) |>
+   rename(Provinsi = prov)
 
+# BUAT BARIS TOTAL BARU
+total_row_tabel4_2 <- data.frame(
+  Provinsi = "Total",
+  Bahan_BakuPnl      = sum(kolom2_7_tabel4_2$Bahan_BakuPnl, na.rm = TRUE),
+  Bakar_Listrik      = sum(kolom2_7_tabel4_2$Bakar_Listrik, na.rm = TRUE),
+  Sewa_Gd            = sum(kolom2_7_tabel4_2$Sewa_Gd, na.rm = TRUE),
+  Jasa_Input         = sum(kolom2_7_tabel4_2$Jasa_Input, na.rm = TRUE),
+  Peng_Lain          = sum(kolom2_7_tabel4_2$Peng_Lain, na.rm = TRUE),
+  Total_Input        = sum(kolom2_7_tabel4_2$Total_Input, na.rm = TRUE))
+  
+# TAMBAHKAN BARIS BARU KE TABEL 4.2
+tabel4_2_prov = rbind(kolom2_7_tabel4_2, total_row_tabel4_2)
 
+# SEPARATOR RIBUAN
+tabel4_2_prov <- tabel4_2_prov |> 
+  mutate(
+    across(
+      .cols = c(Bahan_BakuPnl, Bakar_Listrik, Sewa_Gd, 
+                Jasa_Input, Peng_Lain, Total_Input), 
+      .fns = ~ scales::comma(., big.mark = ".")
+    )
+  )
+
+kable(tabel4_2_prov, align = "r")
 
 ```
 
@@ -162,7 +180,7 @@ kable(tabel3_2_prov, align = "r")
 kolom2_7_tabel5_2 <- stpim23 |>
   group_by(prov) |>                 
   summarise(
-    Barang_Prod    = sum(r401a * weight, na.rm = TRUE),
+    Barang_Prod    = sum(r503k6_sum * weight, na.rm = TRUE),
     Listrik_Prod   = sum(r404d * weight, na.rm = TRUE),
     Jasa_Prod      = sum(r403a * weight, na.rm = TRUE),
     Selisih_Stok   = sum((r406b - r406a) * weight, na.rm = TRUE),
@@ -204,8 +222,8 @@ kable(tabel5_2_prov, align = "r")
 kolom2_6_tabel6_2 <- stpim23 |>
   group_by(prov) |>                 
   summarise(
-    Total_Input         = sum((r302a_1 + r302b_1 + r303a + r304c + r305a + r311 + r312 + r313) * weight, na.rm = TRUE),  # SESUAIKAN DENGAN FILE BARU
-    Total_Output        = sum((r401a + r403a + r404a + r404b + r404c + r404d + r404f + (r406b - r406a)) * weight, na.rm = TRUE),
+    Total_Input         = sum((r501k5_sum + r303a + r304c + r305a + r311 + r312 + r313) * weight, na.rm = TRUE),
+    Total_Output        = sum((r503k6_sum + r403a + r404a + r404b + r404c + r404d + r404f + (r406b - r406a)) * weight, na.rm = TRUE),
     Nilai_Tambah_psr    = Total_Output - Total_Input,
     Pajak               = sum(r306 * weight, na.rm = TRUE),
     Nilai_Tambah        = Nilai_Tambah_psr - Pajak) |>
