@@ -22,37 +22,71 @@ library(dplyr)
 library(openxlsx)
 ```
 
-## Persiapan File STPIM
+## Input File
 
-```{r input data stpim}
+```{r input file}
 stpim23 = read_excel("STPIM (CAWI) NASIONAL tahun 2024.xlsx")
+skim23 = read_excel("SKIM.IIADetail NASIONAL tahun 2024.xlsx")
+dpa24 = read_excel("DPA (CAPI) NASIONAL tahun 2024.xlsx")
 ```
 
-Pada tahapan persiapan ini, buat dulu kolom baru pada file stpim, yaitu kolom penjumlahan bahan baku & penolong *(r501k5_sum)*. Lalu, ganti nama variabel nilai produksi yang awalnya *r401a* menjadi *r503k6_sum*. Tujuannya adalah agar nama kolom bahan baku & penolong dan nilai produksi pada file STPIM sama dengan file SKIM.
+
+## Persiapan File STPIM
+
+Pada tahapan persiapan STPIM ini yang pertama dilakukan adalah membuat kolom baru, yaitu kolom penjumlahan bahan baku & penolong *(r501k5_sum)*. Setelah itu, ganti nama variabel nilai produksi yang awalnya *r401a* menjadi *r503k6_sum*. Tujuannya adalah agar nama kolom bahan baku & penolong dan nilai produksi pada file STPIM sama dengan file SKIM.
 
 ```{r r501k5_sum dan r503k6_sum}
 stpim23 = stpim23 %>%
-  mutate(r501k5_sum = r302a_1 + r302b_1)
+  mutate(r501k5_sum = ifelse(is.na(r302a_1), 0, r302a_1) + ifelse(is.na(r302b_1), 0, r302b_1))
 
-colnames(stpim23)[colnames(stpim23) == "r401a"] <- "r503k6_sum"
+colnames(stpim23)[colnames(stpim23) == "r401a"] = "r503k6_sum"
 ```
+
+Selanjutnya, data export STPIM ini juga harus difilter dulu pada kolom *tindak_lanjut_desk*. Yang dipilih adalah *NON RESPON*, *PENGGANTI & ELIGIBLE*, *UTAMA & ELIGIBLE*.
+
+```{r filter tindak_lanjut}
+stpim23 = stpim23 %>%
+  filter(tindak_lanjut_desk %in% c("NON RESPON", "PENGGANTI & ELIGIBLE", "UTAMA & ELIGIBLE"))
+```
+
+Selanjutnya, menghapus baris yang status sampelnya *Tambahan*.
+
+```{r filter status sampel}
+stpim23 = stpim23 %>%
+  filter(status_sampel != "T")
+```
+
+Terakhir, memasukkan kolom strata dari DPA24 ke STPIM23.
+
+```{r memasukkan kolom strata}
+stpim23 = stpim23 %>%
+  left_join(dpa24 %>% select(kip, strata), by = "kip")
+```
+
 
 ## Persiapan File SKIM
 
-```{r input data skim}
-skim23 = read_excel("SKIM.IIADetail NASIONAL tahun 2024.xlsx")
+Selanjutnya, melakukan filter pada file SKIM yang ternyata bukan sampel SKIM. Cara memfilter disini saya menggunakan file DPA.
+
+```{r filter bukan skim}
+skim23 = skim23 %>%
+  left_join(dpa24 %>% select(kip, status_u_5), by = "kip")
+
+skim23 = skim23 %>%
+  filter(is.na(status_u_5))
 ```
+
 
 ## Menggabungkan File STPIM dan SKIM
 
-### Pertama, pilih dulu kolom dari SKIM yang sama dengan STPIM
+Pertama, pilih dulu kolom dari SKIM yang sama dengan STPIM
 
 ```{r pilih kolom skim}
 skim23_terpilih = skim23 %>%
   select(all_of(intersect(names(stpim23), names(skim23))))
 ```
 
-### Kedua, masukkan kolom dari STPIM yang tidak ada di SKIM dengan nilai NA
+Kedua, masukkan kolom dari STPIM yang tidak ada di SKIM dengan nilai NA
 
 ```{r masukkan kolom stpim}
 missing_columns = setdiff(names(stpim23), names(skim23_terpilih))
@@ -64,7 +98,7 @@ skim23_full = skim23_terpilih %>%
   select(names(stpim23))
 ```
 
-### Ketiga, lakukan penyesuaian tipe data kolom SKIM supaya sama dengan STPIM
+Ketiga, lakukan penyesuaian tipe data kolom SKIM supaya sama dengan STPIM
 
 ```{r penyesuaian tipe data}
 for (col in names(stpim23)) {
@@ -77,18 +111,19 @@ for (col in names(stpim23)) {
 }
 ```
 
-### Keempat, menggabungkan file STPIM dan SKIM
+Keempat, menggabungkan file STPIM dan SKIM
 
 ```{r gabung stpim dan skim}
 stpim_skim = bind_rows(stpim23, skim23_full)
 ```
 
-### Kelima, bagi dulu nilai tambah dengan 1.000
+Kelima, bagi dulu nilai tambah dengan 1.000
 
 ```{r bagi ntb dengan 1000}
 stpim_skim = stpim_skim %>%
-  mutate(nilai_tambah = nilai_tambah /1000)
+  mutate(nilai_tambah = nilai_tambah / 1000)
 ```
+
 
 ## Mengecek apakah ada KIP Duplikat
 
@@ -104,9 +139,23 @@ if (nrow(kip_duplikat) > 0) {
 }
 ```
 
+
+## Membuang Salah Satu KIP Duplikat
+
+Untuk KIP yang duplikat disini, yang diambil adalah yang kolom *tindak_lanjut_desk* terisi saja. Kenapa? Karena ketika dicek, ternyata di webentry 5 KIP tersebut tidak ada di SKIM melainkan di STPIM (tindak_lanjut_desk terisi)
+
+```{r buang duplikat}
+stpim_skim_clean <- stpim_skim %>%
+  group_by(kip) %>%
+  # Pilih baris dengan tindak_lanjut yang tidak NA jika duplikat
+  filter(!(duplicated(kip) & is.na(tindak_lanjut_desk))) %>%
+  ungroup()
+```
+
+
 ## Export File Gabungan
 
 ```{r export file}
-write.xlsx(stpim_skim, "SKIM-STPIM.xlsx")
+write.xlsx(stpim_skim_clean, "SKIM-STPIM.xlsx")
 ```
 

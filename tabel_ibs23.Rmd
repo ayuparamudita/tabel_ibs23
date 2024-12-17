@@ -25,22 +25,7 @@ library(dplyr)
 
 ```{r input data}
 stpim23 = read_excel("SKIM-STPIM.xlsx")
-dpa24 = read_excel("DPA (CAPI) NASIONAL tahun 2024.xlsx")
 jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
-```
-
-## Matching Strata dan Menghapus Tambahan
-
-Matching strata ini adalah memasukkan kolom strata dari DPA24 ke STPIM23. Adapun, menghapus tambahan adalah menghapus baris yang status sampelnya "Tambahan".
-
-```{r matching strata}
-stpim23 = stpim23 %>%
-  left_join(dpa24 %>% select(kip, strata), by = "kip")
-```
-
-```{r menghapus tambahan}
-stpim23 = stpim23 %>%
-  filter(status_sampel != "T")
 ```
 
 ## Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode Industri
