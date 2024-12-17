@@ -27,8 +27,13 @@ library(openxlsx)
 ## Input Data
 
 ```{r input data}
-stpim23 = read_excel("SKIM-STPIM.xlsx")
-jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
+stpim23    = read_excel("SKIM-STPIM.xlsx")
+jumlah     = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
+masterprov = read_excel("Master_Provinsi.xlsx")
+
+## UBAH TIPE DATA AGAR BISA DIMATCH
+masterprov <- masterprov |>
+  mutate(Kode_Prov = as.character(Kode_Prov))
 ```
 
 ## Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut Provinsi, 2023
@@ -52,6 +57,17 @@ tabel1_2_prov <- kolom2_tabel1_2 |>
     Tenaga_Kerja = if_else(is.na(Tenaga_Kerja), sum(Tenaga_Kerja, na.rm = TRUE), Tenaga_Kerja)
   )
 
+## MATCH KODE & NAMA PROV
+tabel1_2_prov <- tabel1_2_prov |>
+  left_join(masterprov, by = c("Provinsi" = "Kode_Prov")) |>      # MATCH NAMA DAN KODE PROV
+  mutate(
+    Nama_Prov = if_else(is.na(Nama_Prov), Provinsi, Nama_Prov)    
+  ) |>
+  select(-1) |>                                                   # REORDER POSISI VAR
+  select(ncol(tabel1_2_prov), everything()) |>
+  rename(Provinsi = Nama_Prov)
+
+## TABULASI
 knitr::kable(tabel1_2_prov)
 
 ```
@@ -83,6 +99,17 @@ tabel2_2_prov <- kolom2_tabel1_2 |>
   ) |>
   mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
 
+## MATCH KODE & NAMA PROV
+tabel2_2_prov <- tabel2_2_prov |>
+  left_join(masterprov, by = c("Provinsi" = "Kode_Prov")) |>      # MATCH NAMA DAN KODE PROV
+  mutate(
+    Nama_Prov = if_else(is.na(Nama_Prov), Provinsi, Nama_Prov)    
+  ) |>
+  select(-1) |>                                                   # REORDER POSISI VAR
+  select(ncol(tabel2_2_prov), everything()) |>
+  rename(Provinsi = Nama_Prov)
+
+## TABULASI
 knitr::kable(tabel2_2_prov)
 
 ```
@@ -130,7 +157,17 @@ tabel3_2_prov <- tabel3_2_prov |>
   ) |>
   mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
 
+## MATCH KODE & NAMA PROV
+tabel3_2_prov <- tabel3_2_prov |>
+  left_join(masterprov, by = c("Provinsi" = "Kode_Prov")) |>      # MATCH NAMA DAN KODE PROV
+  mutate(
+    Nama_Prov = if_else(is.na(Nama_Prov), Provinsi, Nama_Prov)    
+  ) |>
+  select(-1) |>                                                   # REORDER POSISI VAR
+  select(ncol(tabel3_2_prov), everything()) |>
+  rename(Provinsi = Nama_Prov)
 
+## TABULASI
 kable(tabel3_2_prov, align = "r")
 
 ```
@@ -174,7 +211,17 @@ tabel4_2_prov <- tabel4_2_prov |>
   ) |>
   mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
 
+## MATCH KODE & NAMA PROV
+tabel4_2_prov <- tabel4_2_prov |>
+  left_join(masterprov, by = c("Provinsi" = "Kode_Prov")) |>      # MATCH NAMA DAN KODE PROV
+  mutate(
+    Nama_Prov = if_else(is.na(Nama_Prov), Provinsi, Nama_Prov)    
+  ) |>
+  select(-1) |>                                                   # REORDER POSISI VAR
+  select(ncol(tabel4_2_prov), everything()) |>
+  rename(Provinsi = Nama_Prov)
 
+## TABULASI
 kable(tabel4_2_prov, align = "r")
 
 ```
@@ -218,7 +265,17 @@ tabel5_2_prov <- tabel5_2_prov |>
   ) |>
   mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
 
+## MATCH KODE & NAMA PROV
+tabel5_2_prov <- tabel5_2_prov |>
+  left_join(masterprov, by = c("Provinsi" = "Kode_Prov")) |>      # MATCH NAMA DAN KODE PROV
+  mutate(
+    Nama_Prov = if_else(is.na(Nama_Prov), Provinsi, Nama_Prov)    
+  ) |>
+  select(-1) |>                                                   # REORDER POSISI VAR
+  select(ncol(tabel5_2_prov), everything()) |>
+  rename(Provinsi = Nama_Prov)
 
+## TABULASI
 kable(tabel5_2_prov, align = "r")
 
 ```
@@ -260,7 +317,17 @@ tabel6_2_prov <- tabel6_2_prov |>
   ) |>
   mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
 
+## MATCH KODE & NAMA PROV
+tabel6_2_prov <- tabel6_2_prov |>
+  left_join(masterprov, by = c("Provinsi" = "Kode_Prov")) |>      # MATCH NAMA DAN KODE PROV
+  mutate(
+    Nama_Prov = if_else(is.na(Nama_Prov), Provinsi, Nama_Prov)    
+  ) |>
+  select(-1) |>                                                   # REORDER POSISI VAR
+  select(ncol(tabel6_2_prov), everything()) |>
+  rename(Provinsi = Nama_Prov)
 
+## TABULASI
 kable(tabel6_2_prov, align = "r")
 
 ```
