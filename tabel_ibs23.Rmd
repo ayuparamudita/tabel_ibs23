@@ -25,20 +25,20 @@ library(dplyr)
 
 ```{r input data}
 stpim23 = read_excel("SKIM-STPIM.xlsx")
-jumlah = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
+jumlah  = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
 ```
 
 ## Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode Industri
 
 ```{r tabel 1.1 kolom 2}
 jum_kbli = jumlah[, 5:28]
-t_jum_kbli <- as.data.frame(t(jum_kbli))
+t_jum_kbli = as.data.frame(t(jum_kbli))
 
 # Tambahkan kolom KBLI dengan judul kolom awal
-t_jum_kbli <- cbind(KBLI = rownames(t_jum_kbli), t_jum_kbli)
+t_jum_kbli = cbind(KBLI = rownames(t_jum_kbli), t_jum_kbli)
 
 # Reset nama kolom agar lebih rapi (opsional)
-colnames(t_jum_kbli) <- c("KBLI", paste0("Row", 1:(ncol(t_jum_kbli) - 1)))
+colnames(t_jum_kbli) = c("KBLI", paste0("Row", 1:(ncol(t_jum_kbli) - 1)))
 
 # Ambil kolom KBLI dan Total
 kolom2_tabel1_1 = t_jum_kbli %>%
@@ -49,9 +49,8 @@ kolom2_tabel1_1 = t_jum_kbli %>%
 stpim23$KBLI = substr(stpim23$r201_kode, 1, 2)
 
 kolom3_tabel1_1 = stpim23 %>%
-  mutate(jumlah = r206a * weight) %>% 
   group_by(KBLI) %>%                 
-  summarise(Tenaga_Kerja = sum(jumlah, na.rm = TRUE))
+  summarise(Tenaga_Kerja = sum(r206a * weight, na.rm = TRUE))
 ```
 
 ```{r tabel 1.1 gabung kolom 2 dan 3}
@@ -63,17 +62,88 @@ Setelah itu, menambahkan baris Total
 
 ```{r tabel 1.1 baris total}
 # Hitung total untuk Kol2 dan Kol3
-total_Perusahaan = sum(tabel1_1_kbli$Perusahaan, na.rm = TRUE)
+total_Perusahaan   = sum(tabel1_1_kbli$Perusahaan, na.rm = TRUE)
 total_Tenaga_Kerja = sum(tabel1_1_kbli$Tenaga_Kerja, na.rm = TRUE)
 
 # Buat baris baru
 total_1_1 = data.frame(
-  KBLI = "Total",
-  Perusahaan = total_Perusahaan,
+  KBLI         = "INDONESIA",
+  Perusahaan   = total_Perusahaan,
   Tenaga_Kerja = total_Tenaga_Kerja)
 
 # Tambahkan baris baru ke Tabel 1.1
 tabel1_1_kbli = rbind(tabel1_1_kbli, total_1_1)
 ```
 
+
 ## Tabel 2.1 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Kode Industri
+
+```{r tabel 2.1 kolom 2}
+kolom2_tabel2_1 = t_jum_kbli %>%
+  select(KBLI = KBLI, Perusahaan = Row39)
+```
+
+```{r tabel 2.1 kolom 3-10}
+kolom3_tabel2_1 = stpim23 %>%
+  group_by(KBLI) %>%
+  summarise(Tenaga_Kerja_L        = sum(r206b_1 * weight, na.rm = TRUE),     #Kolom 3
+            Tenaga_Kerja_P        = sum(r206b_2 * weight, na.rm = TRUE),     #Kolom 4
+            Tenaga_Kerja_SumLP    = Tenaga_Kerja_L + Tenaga_Kerja_P,         #Kolom 5
+            Tenaga_Kerja_Prod     = sum(r206c_1 * weight, na.rm = TRUE),     #Kolom 6
+            Tenaga_Kerja_Lain     = sum(r206c_2 * weight, na.rm = TRUE),     #Kolom 7
+            Tenaga_Kerja_SumPrdLn = Tenaga_Kerja_Prod + Tenaga_Kerja_Lain,   #Kolom 8
+            Tenaga_Kerja_Asing    = sum(r206d * weight, na.rm = TRUE),       #Kolom 9
+            Tenaga_Kerja_Total    = sum(r206a * weight, na.rm = TRUE)        #Kolom 10
+            )
+
+```
+
+```{r tabel 2.1 gabung kolom 2 dan 3}
+tabel2_1_kbli = kolom2_tabel2_1 %>%
+  left_join(kolom3_tabel2_1, by = "KBLI")
+```
+
+Setelah itu, menambahkan baris Total
+
+```{r tabel 2.1 baris total}
+# Hitung total untuk Kol3 sampai Kol10
+total_Tenaga_Kerja_L         = sum(tabel2_1_kbli$Tenaga_Kerja_L, na.rm = TRUE)       
+total_Tenaga_Kerja_P         = sum(tabel2_1_kbli$Tenaga_Kerja_P, na.rm = TRUE)
+total_Tenaga_Kerja_SumLP     = sum(tabel2_1_kbli$Tenaga_Kerja_SumLP, na.rm = TRUE)
+total_Tenaga_Kerja_Prod      = sum(tabel2_1_kbli$Tenaga_Kerja_Prod, na.rm = TRUE)
+total_Tenaga_Kerja_Lain      = sum(tabel2_1_kbli$Tenaga_Kerja_Lain, na.rm = TRUE)
+total_Tenaga_Kerja_SumPrdLn  = sum(tabel2_1_kbli$Tenaga_Kerja_SumPrdLn, na.rm = TRUE)
+total_Tenaga_Kerja_Asing     = sum(tabel2_1_kbli$Tenaga_Kerja_Asing, na.rm = TRUE)
+total_Tenaga_Kerja_Total     = sum(tabel2_1_kbli$Tenaga_Kerja_Total, na.rm = TRUE)
+
+# Buat baris baru
+total_2_1 = data.frame(
+  KBLI                  = "INDONESIA",
+  Perusahaan            = total_Perusahaan,
+  Tenaga_Kerja_L        = total_Tenaga_Kerja_L,
+  Tenaga_Kerja_P        = total_Tenaga_Kerja_P,
+  Tenaga_Kerja_SumLP    = total_Tenaga_Kerja_SumLP,
+  Tenaga_Kerja_Prod     = total_Tenaga_Kerja_Prod,
+  Tenaga_Kerja_Lain     = total_Tenaga_Kerja_Lain,
+  Tenaga_Kerja_SumPrdLn = total_Tenaga_Kerja_SumPrdLn,
+  Tenaga_Kerja_Asing    = total_Tenaga_Kerja_Asing,
+  Tenaga_Kerja_Total    = total_Tenaga_Kerja_Total)
+
+# Tambahkan baris baru ke Tabel 1.1
+tabel2_1_kbli = rbind(tabel2_1_kbli, total_2_1)
+```
+
+
+# Tabel 3.1 Pengeluaran untuk Pekerja menurut Kode Industri dan Jenis Pengeluaran
+
+```{r tabel 3.1}
+tabel3_1_kbli = stpim23 %>%
+  group_by(KBLI) %>%
+  summarise(
+    
+  )
+
+```
+
+
+
