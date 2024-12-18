@@ -12,7 +12,7 @@
 
 <meta name="date" content="2024-12-12" />
 
-<title>tabel_ibs23</title>
+<title>Draf Tabel STPIM 2023</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1566,7 +1566,7 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">tabel_ibs23</h1>
+<h1 class="title toc-ignore">Draf Tabel STPIM 2023</h1>
 <h4 class="date">2024-12-12</h4>
 
 </div>
@@ -1577,286 +1577,191 @@ border-radius: 0px;
 <p>Berikut ini adalah kode untuk membuat tabulasi Rantab STPIM 2023.
 Jumlah tabel yang akan dihasilkan adalah sebanyak 12 tabel.</p>
 <pre class="r"><code>library(readxl)
-library(dplyr)</code></pre>
+library(dplyr)
+library(scales)
+library(knitr)
+library(openxlsx)</code></pre>
 </div>
 <div id="input-data" class="section level2">
 <h2>Input Data</h2>
-<pre class="r"><code>stpim23 = read_excel(&quot;STPIM (CAWI) NASIONAL tahun 2024.xlsx&quot;)
-dpa24 = read_excel(&quot;DPA (CAPI) NASIONAL tahun 2024.xlsx&quot;)
-jumlah = read_excel(&quot;Jumlah Populasi STPIM dan SKIM 2023.xlsx&quot;)</code></pre>
-</div>
-<div id="matching-strata-dan-menghapus-tambahan" class="section level2">
-<h2>Matching Strata dan Menghapus Tambahan</h2>
-<p>Matching strata ini adalah memasukkan kolom strata dari DPA24 ke
-STPIM23. Adapun, menghapus tambahan adalah menghapus baris yang status
-sampelnya “Tambahan”.</p>
-<pre class="r"><code>stpim23 = stpim23 %&gt;%
-  left_join(dpa24 %&gt;% select(kip, strata), by = &quot;kip&quot;)</code></pre>
-<pre class="r"><code>stpim23 = stpim23 %&gt;%
-  filter(status_sampel != &quot;T&quot;)</code></pre>
+<pre class="r"><code>stpim23 = read_excel(&quot;SKIM-STPIM.xlsx&quot;)
+jumlah  = read_excel(&quot;Jumlah Populasi STPIM dan SKIM 2023.xlsx&quot;)</code></pre>
 </div>
 <div id="tabel-1.1-jumlah-perusahaan-dan-banyaknya-pekerja-menurut-kode-industri" class="section level2">
 <h2>Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode
 Industri</h2>
 <pre class="r"><code>jum_kbli = jumlah[, 5:28]
-t_jum_kbli &lt;- as.data.frame(t(jum_kbli))
+t_jum_kbli = as.data.frame(t(jum_kbli))
 
 # Tambahkan kolom KBLI dengan judul kolom awal
-t_jum_kbli &lt;- cbind(KBLI = rownames(t_jum_kbli), t_jum_kbli)
+t_jum_kbli = cbind(KBLI = rownames(t_jum_kbli), t_jum_kbli)
 
 # Reset nama kolom agar lebih rapi (opsional)
-colnames(t_jum_kbli) &lt;- c(&quot;KBLI&quot;, paste0(&quot;Row&quot;, 1:(ncol(t_jum_kbli) - 1)))
+colnames(t_jum_kbli) = c(&quot;KBLI&quot;, paste0(&quot;Row&quot;, 1:(ncol(t_jum_kbli) - 1)))
 
 # Ambil kolom KBLI dan Total
-kolom2_tabel1_1 = t_jum_kbli %&gt;%
+kolom2_tabel1_1_kbli = t_jum_kbli %&gt;%
   select(KBLI = KBLI, Perusahaan = Row39)</code></pre>
 <pre class="r"><code>stpim23$KBLI = substr(stpim23$r201_kode, 1, 2)
 
-kolom3_tabel1_1 = stpim23 %&gt;%
-  mutate(jumlah = r206a * weight) %&gt;% 
+kolom3_tabel1_1_kbli = stpim23 %&gt;%
   group_by(KBLI) %&gt;%                 
-  summarise(Tenaga_Kerja = sum(jumlah, na.rm = TRUE))</code></pre>
-<pre class="r"><code>tabel1_1_kbli = kolom2_tabel1_1 %&gt;%
-  left_join(kolom3_tabel1_1 %&gt;% select(KBLI, Tenaga_Kerja), by = &quot;KBLI&quot;)</code></pre>
+  summarise(Tenaga_Kerja = sum(r206a * weight, na.rm = TRUE))</code></pre>
+<pre class="r"><code>tabel1_1_kbli = kolom2_tabel1_1_kbli %&gt;%
+  left_join(kolom3_tabel1_1_kbli %&gt;% select(KBLI, Tenaga_Kerja), by = &quot;KBLI&quot;)</code></pre>
 <p>Setelah itu, menambahkan baris Total</p>
-<pre class="r"><code># Hitung total untuk Kol2 dan Kol3
-total_Perusahaan = sum(tabel1_1_kbli$Perusahaan, na.rm = TRUE)
-total_Tenaga_Kerja = sum(tabel1_1_kbli$Tenaga_Kerja, na.rm = TRUE)
-
-# Buat baris baru
-total_1_1 = data.frame(
-  KBLI = &quot;Total&quot;,
-  Perusahaan = total_Perusahaan,
-  Tenaga_Kerja = total_Tenaga_Kerja)
+<pre class="r"><code># Buat baris baru
+total_1_1_kbli = data.frame(
+  KBLI         = &quot;Total&quot;,
+  Perusahaan   = sum(tabel1_1_kbli$Perusahaan, na.rm = TRUE),
+  Tenaga_Kerja = sum(tabel1_1_kbli$Tenaga_Kerja, na.rm = TRUE))
 
 # Tambahkan baris baru ke Tabel 1.1
-tabel1_1_kbli = rbind(tabel1_1_kbli, total_1_1)</code></pre>
-</div>
-<div id="tabel-1.2-jumlah-perusahaan-dan-banyaknya-pekerja-menurut-provinsi" class="section level2">
-<h2>Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut
-Provinsi</h2>
-<pre class="r"><code>## KOLOM 2
-kolom2_tabel1_2 = jumlah |&gt;
-  mutate(Provinsi = if_else(Provinsi == &quot;Grand Total&quot;, &quot;Total&quot;, Provinsi)) |&gt;
-  select(Provinsi = Provinsi, Perusahaan = `Grand Total`)
-  
-## KOLOM 3
-kolom3_tabel1_2 &lt;- stpim23 |&gt;
-  group_by(prov) |&gt;                 
-  summarise(Tenaga_Kerja = sum(r206a * weight, na.rm = TRUE)) |&gt;
-  rename(Provinsi = prov)
+tabel1_1_kbli = rbind(tabel1_1_kbli, total_1_1_kbli)
 
-## GABUNG
-tabel1_2_prov &lt;- kolom2_tabel1_2 |&gt;
-  left_join(kolom3_tabel1_2, by = &quot;Provinsi&quot;) |&gt;
+# Separator Ribuan
+tabel1_1_kbli = tabel1_1_kbli %&gt;% 
   mutate(
-    Tenaga_Kerja = if_else(is.na(Tenaga_Kerja), sum(Tenaga_Kerja, na.rm = TRUE), Tenaga_Kerja)
+    across(
+      .cols = c(2:3), 
+      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+    )
   )
 
-knitr::kable(tabel1_2_prov)</code></pre>
+kable(tabel1_1_kbli, align = &quot;r&quot;)</code></pre>
 <table>
 <thead>
 <tr class="header">
-<th align="left">Provinsi</th>
+<th align="right">KBLI</th>
 <th align="right">Perusahaan</th>
 <th align="right">Tenaga_Kerja</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">11</td>
-<td align="right">101</td>
-<td align="right">9546</td>
+<td align="right">10</td>
+<td align="right">7.736</td>
+<td align="right">1.029.740</td>
 </tr>
 <tr class="even">
-<td align="left">12</td>
-<td align="right">1257</td>
-<td align="right">169043</td>
-</tr>
-<tr class="odd">
-<td align="left">13</td>
-<td align="right">217</td>
-<td align="right">35399</td>
-</tr>
-<tr class="even">
-<td align="left">14</td>
-<td align="right">389</td>
-<td align="right">88529</td>
-</tr>
-<tr class="odd">
-<td align="left">15</td>
-<td align="right">185</td>
-<td align="right">30021</td>
-</tr>
-<tr class="even">
-<td align="left">16</td>
-<td align="right">309</td>
-<td align="right">80097</td>
-</tr>
-<tr class="odd">
-<td align="left">17</td>
-<td align="right">76</td>
-<td align="right">12565</td>
-</tr>
-<tr class="even">
-<td align="left">18</td>
-<td align="right">410</td>
-<td align="right">91301</td>
-</tr>
-<tr class="odd">
-<td align="left">19</td>
-<td align="right">144</td>
-<td align="right">22293</td>
-</tr>
-<tr class="even">
-<td align="left">21</td>
-<td align="right">708</td>
-<td align="right">206866</td>
-</tr>
-<tr class="odd">
-<td align="left">31</td>
-<td align="right">1547</td>
-<td align="right">92264</td>
-</tr>
-<tr class="even">
-<td align="left">32</td>
-<td align="right">8735</td>
-<td align="right">1359429</td>
-</tr>
-<tr class="odd">
-<td align="left">33</td>
-<td align="right">4551</td>
-<td align="right">1040105</td>
-</tr>
-<tr class="even">
-<td align="left">34</td>
-<td align="right">586</td>
-<td align="right">83885</td>
-</tr>
-<tr class="odd">
-<td align="left">35</td>
-<td align="right">6372</td>
-<td align="right">1017789</td>
-</tr>
-<tr class="even">
-<td align="left">36</td>
-<td align="right">3788</td>
-<td align="right">401891</td>
-</tr>
-<tr class="odd">
-<td align="left">51</td>
-<td align="right">456</td>
-<td align="right">41873</td>
-</tr>
-<tr class="even">
-<td align="left">52</td>
-<td align="right">211</td>
-<td align="right">11600</td>
-</tr>
-<tr class="odd">
-<td align="left">53</td>
-<td align="right">75</td>
-<td align="right">2078</td>
-</tr>
-<tr class="even">
-<td align="left">61</td>
-<td align="right">242</td>
-<td align="right">67901</td>
-</tr>
-<tr class="odd">
-<td align="left">62</td>
-<td align="right">167</td>
-<td align="right">20139</td>
-</tr>
-<tr class="even">
-<td align="left">63</td>
-<td align="right">230</td>
-<td align="right">45871</td>
-</tr>
-<tr class="odd">
-<td align="left">64</td>
-<td align="right">285</td>
-<td align="right">82373</td>
-</tr>
-<tr class="even">
-<td align="left">65</td>
-<td align="right">40</td>
-<td align="right">12066</td>
-</tr>
-<tr class="odd">
-<td align="left">71</td>
-<td align="right">110</td>
-<td align="right">24569</td>
-</tr>
-<tr class="even">
-<td align="left">72</td>
-<td align="right">121</td>
-<td align="right">52521</td>
-</tr>
-<tr class="odd">
-<td align="left">73</td>
-<td align="right">526</td>
-<td align="right">51778</td>
-</tr>
-<tr class="even">
-<td align="left">74</td>
-<td align="right">141</td>
-<td align="right">16164</td>
-</tr>
-<tr class="odd">
-<td align="left">75</td>
-<td align="right">26</td>
-<td align="right">6120</td>
-</tr>
-<tr class="even">
-<td align="left">76</td>
-<td align="right">34</td>
-<td align="right">3295</td>
-</tr>
-<tr class="odd">
-<td align="left">81</td>
-<td align="right">38</td>
-<td align="right">5160</td>
-</tr>
-<tr class="even">
-<td align="left">82</td>
-<td align="right">35</td>
-<td align="right">1066</td>
-</tr>
-<tr class="odd">
-<td align="left">91</td>
-<td align="right">35</td>
-<td align="right">1308</td>
-</tr>
-<tr class="even">
-<td align="left">92</td>
-<td align="right">5</td>
-<td align="right">3736</td>
-</tr>
-<tr class="odd">
-<td align="left">94</td>
-<td align="right">19</td>
-<td align="right">8749</td>
-</tr>
-<tr class="even">
-<td align="left">95</td>
-<td align="right">7</td>
-<td align="right">20300</td>
-</tr>
-<tr class="odd">
-<td align="left">96</td>
 <td align="right">11</td>
-<td align="right">3146</td>
-</tr>
-<tr class="even">
-<td align="left">97</td>
-<td align="right">4</td>
-<td align="right">152</td>
+<td align="right">776</td>
+<td align="right">113.892</td>
 </tr>
 <tr class="odd">
-<td align="left">Total</td>
-<td align="right">32193</td>
-<td align="right">5222988</td>
+<td align="right">12</td>
+<td align="right">739</td>
+<td align="right">507.144</td>
+</tr>
+<tr class="even">
+<td align="right">13</td>
+<td align="right">2.007</td>
+<td align="right">601.194</td>
+</tr>
+<tr class="odd">
+<td align="right">14</td>
+<td align="right">2.073</td>
+<td align="right">1.163.008</td>
+</tr>
+<tr class="even">
+<td align="right">15</td>
+<td align="right">771</td>
+<td align="right">885.016</td>
+</tr>
+<tr class="odd">
+<td align="right">16</td>
+<td align="right">1.255</td>
+<td align="right">320.138</td>
+</tr>
+<tr class="even">
+<td align="right">17</td>
+<td align="right">829</td>
+<td align="right">203.552</td>
+</tr>
+<tr class="odd">
+<td align="right">18</td>
+<td align="right">899</td>
+<td align="right">79.980</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">153</td>
+<td align="right">14.686</td>
+</tr>
+<tr class="odd">
+<td align="right">20</td>
+<td align="right">1.962</td>
+<td align="right">172.286</td>
+</tr>
+<tr class="even">
+<td align="right">21</td>
+<td align="right">440</td>
+<td align="right">118.116</td>
+</tr>
+<tr class="odd">
+<td align="right">22</td>
+<td align="right">2.743</td>
+<td align="right">457.216</td>
+</tr>
+<tr class="even">
+<td align="right">23</td>
+<td align="right">1.791</td>
+<td align="right">201.350</td>
+</tr>
+<tr class="odd">
+<td align="right">24</td>
+<td align="right">580</td>
+<td align="right">188.998</td>
+</tr>
+<tr class="even">
+<td align="right">25</td>
+<td align="right">1.724</td>
+<td align="right">179.614</td>
+</tr>
+<tr class="odd">
+<td align="right">26</td>
+<td align="right">352</td>
+<td align="right">167.762</td>
+</tr>
+<tr class="even">
+<td align="right">27</td>
+<td align="right">563</td>
+<td align="right">165.126</td>
+</tr>
+<tr class="odd">
+<td align="right">28</td>
+<td align="right">841</td>
+<td align="right">78.546</td>
+</tr>
+<tr class="even">
+<td align="right">29</td>
+<td align="right">823</td>
+<td align="right">204.486</td>
+</tr>
+<tr class="odd">
+<td align="right">30</td>
+<td align="right">452</td>
+<td align="right">161.724</td>
+</tr>
+<tr class="even">
+<td align="right">31</td>
+<td align="right">1.413</td>
+<td align="right">231.612</td>
+</tr>
+<tr class="odd">
+<td align="right">32</td>
+<td align="right">908</td>
+<td align="right">295.284</td>
+</tr>
+<tr class="even">
+<td align="right">33</td>
+<td align="right">363</td>
+<td align="right">26.168</td>
+</tr>
+<tr class="odd">
+<td align="right">Total</td>
+<td align="right">32.193</td>
+<td align="right">7.566.638</td>
 </tr>
 </tbody>
 </table>
@@ -1864,6 +1769,1590 @@ knitr::kable(tabel1_2_prov)</code></pre>
 <div id="tabel-2.1-jumlah-perusahaan-dan-jenis-tenaga-kerja-menurut-kode-industri" class="section level2">
 <h2>Tabel 2.1 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Kode
 Industri</h2>
+<pre class="r"><code>kolom2_tabel2_1_kbli = t_jum_kbli %&gt;%
+  select(KBLI = KBLI, Perusahaan = Row39)</code></pre>
+<pre class="r"><code>kolom3_10_tabel2_1_kbli = stpim23 %&gt;%
+  group_by(KBLI) %&gt;%
+  summarise(Tenaga_Kerja_L        = sum(r206b_1 * weight, na.rm = TRUE),     #Kolom 3
+            Tenaga_Kerja_P        = sum(r206b_2 * weight, na.rm = TRUE),     #Kolom 4
+            Tenaga_Kerja_SumLP    = Tenaga_Kerja_L + Tenaga_Kerja_P,         #Kolom 5
+            Tenaga_Kerja_Prod     = sum(r206c_1 * weight, na.rm = TRUE),     #Kolom 6
+            Tenaga_Kerja_Lain     = sum(r206c_2 * weight, na.rm = TRUE),     #Kolom 7
+            Tenaga_Kerja_SumPrdLn = Tenaga_Kerja_Prod + Tenaga_Kerja_Lain,   #Kolom 8
+            Tenaga_Kerja_Asing    = sum(r206d * weight, na.rm = TRUE),       #Kolom 9
+            Tenaga_Kerja_Total    = sum(r206a * weight, na.rm = TRUE)        #Kolom 10
+            )</code></pre>
+<pre class="r"><code>tabel2_1_kbli = kolom2_tabel2_1_kbli %&gt;%
+  left_join(kolom3_10_tabel2_1_kbli, by = &quot;KBLI&quot;)</code></pre>
+<p>Setelah itu, menambahkan baris Total</p>
+<pre class="r"><code># Buat baris baru
+total_2_1_kbli = data.frame(
+  KBLI                  = &quot;Total&quot;,
+  Perusahaan            = total_1_1_kbli$Perusahaan,
+  Tenaga_Kerja_L        = sum(tabel2_1_kbli$Tenaga_Kerja_L, na.rm = TRUE),
+  Tenaga_Kerja_P        = sum(tabel2_1_kbli$Tenaga_Kerja_P, na.rm = TRUE),
+  Tenaga_Kerja_SumLP    = sum(tabel2_1_kbli$Tenaga_Kerja_SumLP, na.rm = TRUE),
+  Tenaga_Kerja_Prod     = sum(tabel2_1_kbli$Tenaga_Kerja_Prod, na.rm = TRUE),
+  Tenaga_Kerja_Lain     = sum(tabel2_1_kbli$Tenaga_Kerja_Lain, na.rm = TRUE),
+  Tenaga_Kerja_SumPrdLn = sum(tabel2_1_kbli$Tenaga_Kerja_SumPrdLn, na.rm = TRUE),
+  Tenaga_Kerja_Asing    = sum(tabel2_1_kbli$Tenaga_Kerja_Asing, na.rm = TRUE),
+  Tenaga_Kerja_Total    = sum(tabel2_1_kbli$Tenaga_Kerja_Total, na.rm = TRUE))
+
+# Tambahkan baris baru ke Tabel 2.1
+tabel2_1_kbli = rbind(tabel2_1_kbli, total_2_1_kbli)
+
+# Separator Ribuan
+tabel2_1_kbli = tabel2_1_kbli %&gt;% 
+  mutate(
+    across(
+      .cols = c(2:10), 
+      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+    )
+  )
+
+kable(tabel2_1_kbli, align = &quot;r&quot;)</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="3%" />
+<col width="6%" />
+<col width="9%" />
+<col width="9%" />
+<col width="11%" />
+<col width="11%" />
+<col width="11%" />
+<col width="13%" />
+<col width="11%" />
+<col width="11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">KBLI</th>
+<th align="right">Perusahaan</th>
+<th align="right">Tenaga_Kerja_L</th>
+<th align="right">Tenaga_Kerja_P</th>
+<th align="right">Tenaga_Kerja_SumLP</th>
+<th align="right">Tenaga_Kerja_Prod</th>
+<th align="right">Tenaga_Kerja_Lain</th>
+<th align="right">Tenaga_Kerja_SumPrdLn</th>
+<th align="right">Tenaga_Kerja_Asing</th>
+<th align="right">Tenaga_Kerja_Total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">7.736</td>
+<td align="right">714.296</td>
+<td align="right">288.550</td>
+<td align="right">1.002.846</td>
+<td align="right">736.362</td>
+<td align="right">265.852</td>
+<td align="right">1.002.214</td>
+<td align="right">5.138</td>
+<td align="right">1.029.740</td>
+</tr>
+<tr class="even">
+<td align="right">11</td>
+<td align="right">776</td>
+<td align="right">79.408</td>
+<td align="right">34.484</td>
+<td align="right">113.892</td>
+<td align="right">78.260</td>
+<td align="right">35.632</td>
+<td align="right">113.892</td>
+<td align="right">232</td>
+<td align="right">113.892</td>
+</tr>
+<tr class="odd">
+<td align="right">12</td>
+<td align="right">739</td>
+<td align="right">93.950</td>
+<td align="right">413.194</td>
+<td align="right">507.144</td>
+<td align="right">464.482</td>
+<td align="right">42.662</td>
+<td align="right">507.144</td>
+<td align="right">4.670</td>
+<td align="right">507.144</td>
+</tr>
+<tr class="even">
+<td align="right">13</td>
+<td align="right">2.007</td>
+<td align="right">321.270</td>
+<td align="right">280.004</td>
+<td align="right">601.274</td>
+<td align="right">524.086</td>
+<td align="right">76.734</td>
+<td align="right">600.820</td>
+<td align="right">4.620</td>
+<td align="right">601.194</td>
+</tr>
+<tr class="odd">
+<td align="right">14</td>
+<td align="right">2.073</td>
+<td align="right">268.538</td>
+<td align="right">894.446</td>
+<td align="right">1.162.984</td>
+<td align="right">1.043.130</td>
+<td align="right">119.702</td>
+<td align="right">1.162.832</td>
+<td align="right">5.022</td>
+<td align="right">1.163.008</td>
+</tr>
+<tr class="even">
+<td align="right">15</td>
+<td align="right">771</td>
+<td align="right">267.294</td>
+<td align="right">617.722</td>
+<td align="right">885.016</td>
+<td align="right">786.176</td>
+<td align="right">98.840</td>
+<td align="right">885.016</td>
+<td align="right">3.174</td>
+<td align="right">885.016</td>
+</tr>
+<tr class="odd">
+<td align="right">16</td>
+<td align="right">1.255</td>
+<td align="right">218.824</td>
+<td align="right">101.314</td>
+<td align="right">320.138</td>
+<td align="right">276.808</td>
+<td align="right">43.270</td>
+<td align="right">320.078</td>
+<td align="right">1.900</td>
+<td align="right">320.138</td>
+</tr>
+<tr class="even">
+<td align="right">17</td>
+<td align="right">829</td>
+<td align="right">164.170</td>
+<td align="right">39.382</td>
+<td align="right">203.552</td>
+<td align="right">155.550</td>
+<td align="right">48.002</td>
+<td align="right">203.552</td>
+<td align="right">1.314</td>
+<td align="right">203.552</td>
+</tr>
+<tr class="odd">
+<td align="right">18</td>
+<td align="right">899</td>
+<td align="right">54.954</td>
+<td align="right">25.026</td>
+<td align="right">79.980</td>
+<td align="right">57.828</td>
+<td align="right">22.152</td>
+<td align="right">79.980</td>
+<td align="right">738</td>
+<td align="right">79.980</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">153</td>
+<td align="right">12.864</td>
+<td align="right">1.848</td>
+<td align="right">14.712</td>
+<td align="right">10.948</td>
+<td align="right">3.764</td>
+<td align="right">14.712</td>
+<td align="right">124</td>
+<td align="right">14.686</td>
+</tr>
+<tr class="odd">
+<td align="right">20</td>
+<td align="right">1.962</td>
+<td align="right">122.728</td>
+<td align="right">49.558</td>
+<td align="right">172.286</td>
+<td align="right">124.076</td>
+<td align="right">48.210</td>
+<td align="right">172.286</td>
+<td align="right">1.522</td>
+<td align="right">172.286</td>
+</tr>
+<tr class="even">
+<td align="right">21</td>
+<td align="right">440</td>
+<td align="right">66.756</td>
+<td align="right">51.360</td>
+<td align="right">118.116</td>
+<td align="right">73.548</td>
+<td align="right">44.568</td>
+<td align="right">118.116</td>
+<td align="right">224</td>
+<td align="right">118.116</td>
+</tr>
+<tr class="odd">
+<td align="right">22</td>
+<td align="right">2.743</td>
+<td align="right">307.710</td>
+<td align="right">149.494</td>
+<td align="right">457.204</td>
+<td align="right">371.312</td>
+<td align="right">85.888</td>
+<td align="right">457.200</td>
+<td align="right">7.630</td>
+<td align="right">457.216</td>
+</tr>
+<tr class="even">
+<td align="right">23</td>
+<td align="right">1.791</td>
+<td align="right">177.062</td>
+<td align="right">24.288</td>
+<td align="right">201.350</td>
+<td align="right">150.300</td>
+<td align="right">51.050</td>
+<td align="right">201.350</td>
+<td align="right">1.440</td>
+<td align="right">201.350</td>
+</tr>
+<tr class="odd">
+<td align="right">24</td>
+<td align="right">580</td>
+<td align="right">163.940</td>
+<td align="right">25.058</td>
+<td align="right">188.998</td>
+<td align="right">141.658</td>
+<td align="right">47.340</td>
+<td align="right">188.998</td>
+<td align="right">13.448</td>
+<td align="right">188.998</td>
+</tr>
+<tr class="even">
+<td align="right">25</td>
+<td align="right">1.724</td>
+<td align="right">143.946</td>
+<td align="right">35.668</td>
+<td align="right">179.614</td>
+<td align="right">142.396</td>
+<td align="right">37.218</td>
+<td align="right">179.614</td>
+<td align="right">1.048</td>
+<td align="right">179.614</td>
+</tr>
+<tr class="odd">
+<td align="right">26</td>
+<td align="right">352</td>
+<td align="right">65.124</td>
+<td align="right">102.638</td>
+<td align="right">167.762</td>
+<td align="right">143.778</td>
+<td align="right">23.984</td>
+<td align="right">167.762</td>
+<td align="right">1.584</td>
+<td align="right">167.762</td>
+</tr>
+<tr class="even">
+<td align="right">27</td>
+<td align="right">563</td>
+<td align="right">105.458</td>
+<td align="right">59.666</td>
+<td align="right">165.124</td>
+<td align="right">132.262</td>
+<td align="right">32.712</td>
+<td align="right">164.974</td>
+<td align="right">1.228</td>
+<td align="right">165.126</td>
+</tr>
+<tr class="odd">
+<td align="right">28</td>
+<td align="right">841</td>
+<td align="right">66.616</td>
+<td align="right">11.930</td>
+<td align="right">78.546</td>
+<td align="right">63.502</td>
+<td align="right">15.044</td>
+<td align="right">78.546</td>
+<td align="right">904</td>
+<td align="right">78.546</td>
+</tr>
+<tr class="even">
+<td align="right">29</td>
+<td align="right">823</td>
+<td align="right">138.366</td>
+<td align="right">62.836</td>
+<td align="right">201.202</td>
+<td align="right">157.318</td>
+<td align="right">47.168</td>
+<td align="right">204.486</td>
+<td align="right">1.870</td>
+<td align="right">204.486</td>
+</tr>
+<tr class="odd">
+<td align="right">30</td>
+<td align="right">452</td>
+<td align="right">135.904</td>
+<td align="right">25.820</td>
+<td align="right">161.724</td>
+<td align="right">131.704</td>
+<td align="right">29.786</td>
+<td align="right">161.490</td>
+<td align="right">1.622</td>
+<td align="right">161.724</td>
+</tr>
+<tr class="even">
+<td align="right">31</td>
+<td align="right">1.413</td>
+<td align="right">173.336</td>
+<td align="right">58.276</td>
+<td align="right">231.612</td>
+<td align="right">186.650</td>
+<td align="right">44.962</td>
+<td align="right">231.612</td>
+<td align="right">1.264</td>
+<td align="right">231.612</td>
+</tr>
+<tr class="odd">
+<td align="right">32</td>
+<td align="right">908</td>
+<td align="right">103.346</td>
+<td align="right">191.938</td>
+<td align="right">295.284</td>
+<td align="right">259.094</td>
+<td align="right">36.170</td>
+<td align="right">295.264</td>
+<td align="right">1.720</td>
+<td align="right">295.284</td>
+</tr>
+<tr class="even">
+<td align="right">33</td>
+<td align="right">363</td>
+<td align="right">23.852</td>
+<td align="right">2.316</td>
+<td align="right">26.168</td>
+<td align="right">20.590</td>
+<td align="right">5.578</td>
+<td align="right">26.168</td>
+<td align="right">394</td>
+<td align="right">26.168</td>
+</tr>
+<tr class="odd">
+<td align="right">Total</td>
+<td align="right">32.193</td>
+<td align="right">3.989.712</td>
+<td align="right">3.546.816</td>
+<td align="right">7.536.528</td>
+<td align="right">6.231.818</td>
+<td align="right">1.306.288</td>
+<td align="right">7.538.106</td>
+<td align="right">62.830</td>
+<td align="right">7.566.638</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="tabel-3.1-pengeluaran-untuk-pekerja-menurut-kode-industri-dan-jenis-pengeluaran" class="section level1">
+<h1>Tabel 3.1 Pengeluaran untuk Pekerja menurut Kode Industri dan Jenis
+Pengeluaran</h1>
+<pre class="r"><code>kolom2_8_tabel3_1_kbli = stpim23 %&gt;%
+  group_by(KBLI) %&gt;%
+  summarise(Upah_Prod         = sum(r301a_1 * weight, na.rm = TRUE),
+            PengPekLain_Prod  = sum(r301a_2 * weight, na.rm = TRUE),
+            TotalPengPek_Prod = Upah_Prod + PengPekLain_Prod,
+            Upah_Lain         = sum(r301b_3 * weight, na.rm = TRUE),
+            PengPekLain_Lain  = sum(r301b_4 * weight, na.rm = TRUE),
+            TotalPengPek_Lain = Upah_Lain + PengPekLain_Lain,
+            TotalPengPek      = sum(r301c * weight, na.rm = TRUE)
+  )</code></pre>
+<p>Setelah itu, menambahkan baris Total</p>
+<pre class="r"><code># Buat baris baru
+total_3_1_kbli = data.frame(
+  KBLI              = &quot;Total&quot;,
+  Upah_Prod         = sum(kolom2_8_tabel3_1_kbli$Upah_Prod, na.rm = TRUE),
+  PengPekLain_Prod  = sum(kolom2_8_tabel3_1_kbli$PengPekLain_Prod, na.rm = TRUE),
+  TotalPengPek_Prod = sum(kolom2_8_tabel3_1_kbli$TotalPengPek_Prod, na.rm = TRUE),
+  Upah_Lain         = sum(kolom2_8_tabel3_1_kbli$Upah_Lain, na.rm = TRUE),
+  PengPekLain_Lain  = sum(kolom2_8_tabel3_1_kbli$PengPekLain_Lain, na.rm = TRUE),
+  TotalPengPek_Lain = sum(kolom2_8_tabel3_1_kbli$TotalPengPek_Lain, na.rm = TRUE),
+  TotalPengPek      = sum(kolom2_8_tabel3_1_kbli$TotalPengPek, na.rm = TRUE)
+  )
+
+# Tambahkan baris baru ke Tabel 3.1
+tabel3_1_kbli = rbind(kolom2_8_tabel3_1_kbli, total_3_1_kbli)
+
+# Separator Ribuan
+tabel3_1_kbli = tabel3_1_kbli %&gt;% 
+  mutate(
+    across(
+      .cols = c(2:8), 
+      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+    )
+  )
+
+kable(tabel3_1_kbli, align = &quot;r&quot;)</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="4%" />
+<col width="12%" />
+<col width="13%" />
+<col width="14%" />
+<col width="12%" />
+<col width="13%" />
+<col width="14%" />
+<col width="14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">KBLI</th>
+<th align="right">Upah_Prod</th>
+<th align="right">PengPekLain_Prod</th>
+<th align="right">TotalPengPek_Prod</th>
+<th align="right">Upah_Lain</th>
+<th align="right">PengPekLain_Lain</th>
+<th align="right">TotalPengPek_Lain</th>
+<th align="right">TotalPengPek</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">45.218.025.268</td>
+<td align="right">11.969.138.434</td>
+<td align="right">57.187.163.702</td>
+<td align="right">34.026.808.432</td>
+<td align="right">6.592.362.842</td>
+<td align="right">40.619.171.274</td>
+<td align="right">97.806.334.976</td>
+</tr>
+<tr class="even">
+<td align="right">11</td>
+<td align="right">4.139.538.960</td>
+<td align="right">407.614.048</td>
+<td align="right">4.547.153.008</td>
+<td align="right">2.369.065.710</td>
+<td align="right">327.721.048</td>
+<td align="right">2.696.786.758</td>
+<td align="right">7.243.939.766</td>
+</tr>
+<tr class="odd">
+<td align="right">12</td>
+<td align="right">18.533.851.168</td>
+<td align="right">711.725.104</td>
+<td align="right">19.245.576.272</td>
+<td align="right">3.141.123.458</td>
+<td align="right">317.358.864</td>
+<td align="right">3.458.482.322</td>
+<td align="right">22.704.058.594</td>
+</tr>
+<tr class="even">
+<td align="right">13</td>
+<td align="right">63.391.935.936</td>
+<td align="right">1.737.373.444</td>
+<td align="right">65.129.309.380</td>
+<td align="right">15.147.274.862</td>
+<td align="right">5.115.720.412</td>
+<td align="right">20.262.995.274</td>
+<td align="right">85.392.304.654</td>
+</tr>
+<tr class="odd">
+<td align="right">14</td>
+<td align="right">53.666.896.010</td>
+<td align="right">4.106.676.382</td>
+<td align="right">57.773.572.392</td>
+<td align="right">7.540.299.294</td>
+<td align="right">5.707.981.058</td>
+<td align="right">13.248.280.352</td>
+<td align="right">71.021.852.744</td>
+</tr>
+<tr class="even">
+<td align="right">15</td>
+<td align="right">38.159.426.310</td>
+<td align="right">41.232.311.652</td>
+<td align="right">79.391.737.962</td>
+<td align="right">9.893.312.168</td>
+<td align="right">604.582.198</td>
+<td align="right">10.497.894.366</td>
+<td align="right">89.889.632.328</td>
+</tr>
+<tr class="odd">
+<td align="right">16</td>
+<td align="right">11.250.672.676</td>
+<td align="right">482.991.314</td>
+<td align="right">11.733.663.990</td>
+<td align="right">3.048.702.244</td>
+<td align="right">151.399.066</td>
+<td align="right">3.200.101.310</td>
+<td align="right">14.933.765.300</td>
+</tr>
+<tr class="even">
+<td align="right">17</td>
+<td align="right">11.052.766.560</td>
+<td align="right">7.155.401.986</td>
+<td align="right">18.208.168.546</td>
+<td align="right">5.051.648.988</td>
+<td align="right">615.986.230</td>
+<td align="right">5.667.635.218</td>
+<td align="right">23.875.803.764</td>
+</tr>
+<tr class="odd">
+<td align="right">18</td>
+<td align="right">3.545.683.920</td>
+<td align="right">3.323.844.908</td>
+<td align="right">6.869.528.828</td>
+<td align="right">1.957.835.288</td>
+<td align="right">1.109.679.280</td>
+<td align="right">3.067.514.568</td>
+<td align="right">9.937.043.396</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">2.340.408.338</td>
+<td align="right">229.393.500</td>
+<td align="right">2.569.801.838</td>
+<td align="right">690.014.216</td>
+<td align="right">8.404.236</td>
+<td align="right">698.418.452</td>
+<td align="right">3.268.220.290</td>
+</tr>
+<tr class="odd">
+<td align="right">20</td>
+<td align="right">10.654.451.574</td>
+<td align="right">6.953.677.534</td>
+<td align="right">17.608.129.108</td>
+<td align="right">6.696.786.768</td>
+<td align="right">32.489.279.868</td>
+<td align="right">39.186.066.636</td>
+<td align="right">56.794.195.744</td>
+</tr>
+<tr class="even">
+<td align="right">21</td>
+<td align="right">5.326.459.882</td>
+<td align="right">1.414.469.122</td>
+<td align="right">6.740.929.004</td>
+<td align="right">4.832.311.358</td>
+<td align="right">789.486.522</td>
+<td align="right">5.621.797.880</td>
+<td align="right">12.362.726.884</td>
+</tr>
+<tr class="odd">
+<td align="right">22</td>
+<td align="right">23.898.807.424</td>
+<td align="right">38.193.960.428</td>
+<td align="right">62.092.767.852</td>
+<td align="right">6.365.516.468</td>
+<td align="right">8.835.929.074</td>
+<td align="right">15.201.445.542</td>
+<td align="right">77.294.213.394</td>
+</tr>
+<tr class="even">
+<td align="right">23</td>
+<td align="right">13.189.427.542</td>
+<td align="right">35.987.156.592</td>
+<td align="right">49.176.584.134</td>
+<td align="right">6.224.293.274</td>
+<td align="right">24.850.968.754</td>
+<td align="right">31.075.262.028</td>
+<td align="right">80.251.846.162</td>
+</tr>
+<tr class="odd">
+<td align="right">24</td>
+<td align="right">14.325.320.358</td>
+<td align="right">13.524.851.764</td>
+<td align="right">27.850.172.122</td>
+<td align="right">5.995.674.512</td>
+<td align="right">2.249.352.410</td>
+<td align="right">8.245.026.922</td>
+<td align="right">36.095.199.044</td>
+</tr>
+<tr class="even">
+<td align="right">25</td>
+<td align="right">11.185.325.386</td>
+<td align="right">4.924.923.948</td>
+<td align="right">16.110.249.334</td>
+<td align="right">4.310.143.904</td>
+<td align="right">4.067.236.642</td>
+<td align="right">8.377.380.546</td>
+<td align="right">24.487.629.880</td>
+</tr>
+<tr class="odd">
+<td align="right">26</td>
+<td align="right">11.558.141.082</td>
+<td align="right">180.296.063.876</td>
+<td align="right">191.854.204.958</td>
+<td align="right">2.648.119.570</td>
+<td align="right">23.957.924.766</td>
+<td align="right">26.606.044.336</td>
+<td align="right">218.460.249.294</td>
+</tr>
+<tr class="even">
+<td align="right">27</td>
+<td align="right">10.021.406.598</td>
+<td align="right">7.218.518.524</td>
+<td align="right">17.239.925.122</td>
+<td align="right">3.912.242.540</td>
+<td align="right">13.538.337.826</td>
+<td align="right">17.450.580.366</td>
+<td align="right">34.690.505.488</td>
+</tr>
+<tr class="odd">
+<td align="right">28</td>
+<td align="right">3.945.498.670</td>
+<td align="right">6.837.541.740</td>
+<td align="right">10.783.040.410</td>
+<td align="right">1.335.550.096</td>
+<td align="right">980.494.360</td>
+<td align="right">2.316.044.456</td>
+<td align="right">13.099.084.866</td>
+</tr>
+<tr class="even">
+<td align="right">29</td>
+<td align="right">13.367.766.420</td>
+<td align="right">3.622.340.972</td>
+<td align="right">16.990.107.392</td>
+<td align="right">4.637.185.814</td>
+<td align="right">2.149.008.742</td>
+<td align="right">6.786.194.556</td>
+<td align="right">23.776.301.948</td>
+</tr>
+<tr class="odd">
+<td align="right">30</td>
+<td align="right">10.099.401.942</td>
+<td align="right">1.263.775.154</td>
+<td align="right">11.363.177.096</td>
+<td align="right">2.840.426.362</td>
+<td align="right">750.742.324</td>
+<td align="right">3.591.168.686</td>
+<td align="right">14.954.345.782</td>
+</tr>
+<tr class="even">
+<td align="right">31</td>
+<td align="right">15.027.102.364</td>
+<td align="right">11.022.710.400</td>
+<td align="right">26.049.812.764</td>
+<td align="right">10.200.904.018</td>
+<td align="right">1.704.327.856</td>
+<td align="right">11.905.231.874</td>
+<td align="right">37.955.044.638</td>
+</tr>
+<tr class="odd">
+<td align="right">32</td>
+<td align="right">17.741.819.498</td>
+<td align="right">1.984.883.636</td>
+<td align="right">19.726.703.134</td>
+<td align="right">3.152.408.882</td>
+<td align="right">242.225.424</td>
+<td align="right">3.394.634.306</td>
+<td align="right">23.121.337.440</td>
+</tr>
+<tr class="even">
+<td align="right">33</td>
+<td align="right">1.411.136.326</td>
+<td align="right">3.545.385.832</td>
+<td align="right">4.956.522.158</td>
+<td align="right">456.372.838</td>
+<td align="right">686.527.690</td>
+<td align="right">1.142.900.528</td>
+<td align="right">6.099.422.686</td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">24.007.359.674</td>
+<td align="right">775.918.412</td>
+<td align="right">24.783.278.086</td>
+<td align="right">4.446.170.832</td>
+<td align="right">1.678.231.078</td>
+<td align="right">6.124.401.910</td>
+<td align="right">30.907.737.500</td>
+</tr>
+<tr class="even">
+<td align="right">Total</td>
+<td align="right">437.058.629.886</td>
+<td align="right">388.922.648.706</td>
+<td align="right">825.981.278.592</td>
+<td align="right">150.920.191.896</td>
+<td align="right">139.521.268.570</td>
+<td align="right">290.441.460.466</td>
+<td align="right">1.116.422.796.562</td>
+</tr>
+</tbody>
+</table>
+<div id="tabel-4.1-biaya-input-menurut-kode-industri" class="section level2">
+<h2>Tabel 4.1 Biaya Input menurut Kode Industri</h2>
+<pre class="r"><code>kolom2_7_tabel4_1_kbli = stpim23 %&gt;%
+  group_by(KBLI) %&gt;%
+  summarise(BB_Penolong   = sum(r501k5_sum * weight, na.rm = TRUE),
+            Bakar_Listrik = sum((r303a + r304c) * weight, na.rm = TRUE),
+            Sewa_Gedung_Mesin = sum(r305a * weight, na.rm = TRUE),
+            Jasa_Pihak_Lain = sum(r311 * weight, na.rm = TRUE),
+            Peng_Lain = sum((r312 + r313) * weight, na.rm = TRUE),
+            Total_Peng = BB_Penolong + Bakar_Listrik + Sewa_Gedung_Mesin + Jasa_Pihak_Lain + Peng_Lain
+  )</code></pre>
+<p>Setelah itu, menambahkan baris Total</p>
+<pre class="r"><code># Buat baris baru
+total_4_1_kbli = data.frame(
+  KBLI              = &quot;Total&quot;,
+  BB_Penolong       = sum(kolom2_7_tabel4_1_kbli$BB_Penolong, na.rm = TRUE),
+  Bakar_Listrik     = sum(kolom2_7_tabel4_1_kbli$Bakar_Listrik, na.rm = TRUE),
+  Sewa_Gedung_Mesin = sum(kolom2_7_tabel4_1_kbli$Sewa_Gedung_Mesin, na.rm = TRUE),
+  Jasa_Pihak_Lain   = sum(kolom2_7_tabel4_1_kbli$Jasa_Pihak_Lain, na.rm = TRUE),
+  Peng_Lain         = sum(kolom2_7_tabel4_1_kbli$Peng_Lain, na.rm = TRUE),
+  Total_Peng        = sum(kolom2_7_tabel4_1_kbli$Total_Peng, na.rm = TRUE)
+  )
+
+# Tambahkan baris baru ke Tabel 4.1
+tabel4_1_kbli = rbind(kolom2_7_tabel4_1_kbli, total_4_1_kbli)
+
+# Separator Ribuan
+tabel4_1_kbli = tabel4_1_kbli %&gt;% 
+  mutate(
+    across(
+      .cols = c(2:7), 
+      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+    )
+  )
+
+kable(tabel4_1_kbli, align = &quot;r&quot;)</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="5%" />
+<col width="16%" />
+<col width="15%" />
+<col width="15%" />
+<col width="14%" />
+<col width="15%" />
+<col width="16%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">KBLI</th>
+<th align="right">BB_Penolong</th>
+<th align="right">Bakar_Listrik</th>
+<th align="right">Sewa_Gedung_Mesin</th>
+<th align="right">Jasa_Pihak_Lain</th>
+<th align="right">Peng_Lain</th>
+<th align="right">Total_Peng</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">4.798.490.180.426</td>
+<td align="right">128.939.114.868</td>
+<td align="right">71.412.996.600</td>
+<td align="right">7.568.064.404</td>
+<td align="right">95.407.826.396</td>
+<td align="right">5.101.818.182.694</td>
+</tr>
+<tr class="even">
+<td align="right">11</td>
+<td align="right">343.150.704.932</td>
+<td align="right">35.539.653.470</td>
+<td align="right">6.514.628.232</td>
+<td align="right">51.953.454</td>
+<td align="right">14.747.616.590</td>
+<td align="right">400.004.556.678</td>
+</tr>
+<tr class="odd">
+<td align="right">12</td>
+<td align="right">157.303.843.478</td>
+<td align="right">4.179.826.190</td>
+<td align="right">1.801.469.914</td>
+<td align="right">80.983.702</td>
+<td align="right">6.640.387.634</td>
+<td align="right">170.006.510.918</td>
+</tr>
+<tr class="even">
+<td align="right">13</td>
+<td align="right">3.174.746.455.073</td>
+<td align="right">63.423.073.002</td>
+<td align="right">21.574.436.730</td>
+<td align="right">54.132.229.362</td>
+<td align="right">71.609.952.050</td>
+<td align="right">3.385.486.146.217</td>
+</tr>
+<tr class="odd">
+<td align="right">14</td>
+<td align="right">1.449.674.173.882</td>
+<td align="right">2.568.939.378</td>
+<td align="right">33.853.657.808</td>
+<td align="right">137.455.343.196</td>
+<td align="right">10.298.092.320</td>
+<td align="right">1.633.850.206.584</td>
+</tr>
+<tr class="even">
+<td align="right">15</td>
+<td align="right">2.619.878.845.104</td>
+<td align="right">146.938.991.918</td>
+<td align="right">83.085.330.660</td>
+<td align="right">92.328.338.228</td>
+<td align="right">213.323.379.372</td>
+<td align="right">3.155.554.885.282</td>
+</tr>
+<tr class="odd">
+<td align="right">16</td>
+<td align="right">822.897.923.192</td>
+<td align="right">40.943.913.888</td>
+<td align="right">363.269.466</td>
+<td align="right">267.367.356</td>
+<td align="right">57.607.033.320</td>
+<td align="right">922.079.507.222</td>
+</tr>
+<tr class="even">
+<td align="right">17</td>
+<td align="right">954.822.638.838</td>
+<td align="right">76.444.522.932</td>
+<td align="right">29.083.883.460</td>
+<td align="right">75.231.172</td>
+<td align="right">17.535.761.226</td>
+<td align="right">1.077.962.037.628</td>
+</tr>
+<tr class="odd">
+<td align="right">18</td>
+<td align="right">445.465.811.974</td>
+<td align="right">22.026.641.270</td>
+<td align="right">10.264.158.286</td>
+<td align="right">244.410.362</td>
+<td align="right">4.487.947.540</td>
+<td align="right">482.488.969.432</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">499.281.718.080</td>
+<td align="right">26.766.500.366</td>
+<td align="right">614.196.500</td>
+<td align="right">11.575.302</td>
+<td align="right">6.202.830.820</td>
+<td align="right">532.876.821.068</td>
+</tr>
+<tr class="odd">
+<td align="right">20</td>
+<td align="right">4.655.473.891.120</td>
+<td align="right">138.640.110.380</td>
+<td align="right">34.000.786.864</td>
+<td align="right">18.404.395.634</td>
+<td align="right">102.079.381.086</td>
+<td align="right">4.948.598.565.084</td>
+</tr>
+<tr class="even">
+<td align="right">21</td>
+<td align="right">396.282.783.984</td>
+<td align="right">15.009.259.438</td>
+<td align="right">642.843.694</td>
+<td align="right">560.678.528</td>
+<td align="right">13.668.108.912</td>
+<td align="right">426.163.674.556</td>
+</tr>
+<tr class="odd">
+<td align="right">22</td>
+<td align="right">4.328.819.636.974</td>
+<td align="right">283.330.644.516</td>
+<td align="right">19.817.824.362</td>
+<td align="right">29.443.990.832</td>
+<td align="right">58.625.055.252</td>
+<td align="right">4.720.037.151.936</td>
+</tr>
+<tr class="even">
+<td align="right">23</td>
+<td align="right">1.080.319.204.456</td>
+<td align="right">180.418.269.428</td>
+<td align="right">45.633.897.266</td>
+<td align="right">162.892.470</td>
+<td align="right">18.545.014.618</td>
+<td align="right">1.325.079.278.238</td>
+</tr>
+<tr class="odd">
+<td align="right">24</td>
+<td align="right">1.278.213.753.882</td>
+<td align="right">231.149.503.958</td>
+<td align="right">15.934.998.166</td>
+<td align="right">5.449.349.718</td>
+<td align="right">50.596.887.286</td>
+<td align="right">1.581.344.493.010</td>
+</tr>
+<tr class="even">
+<td align="right">25</td>
+<td align="right">3.659.580.200.952</td>
+<td align="right">106.462.118.058</td>
+<td align="right">44.688.324.102</td>
+<td align="right">61.432.667.738</td>
+<td align="right">116.121.455.002</td>
+<td align="right">3.988.284.765.852</td>
+</tr>
+<tr class="odd">
+<td align="right">26</td>
+<td align="right">685.001.009.606</td>
+<td align="right">36.592.998.570</td>
+<td align="right">22.514.599.798</td>
+<td align="right">245.277.418</td>
+<td align="right">139.030.158.878</td>
+<td align="right">883.384.044.270</td>
+</tr>
+<tr class="even">
+<td align="right">27</td>
+<td align="right">3.306.669.524.190</td>
+<td align="right">42.493.724.554</td>
+<td align="right">41.396.712.520</td>
+<td align="right">19.045.282.288</td>
+<td align="right">157.773.602.046</td>
+<td align="right">3.567.378.845.598</td>
+</tr>
+<tr class="odd">
+<td align="right">28</td>
+<td align="right">709.662.829.900</td>
+<td align="right">39.851.046.524</td>
+<td align="right">15.973.490.032</td>
+<td align="right">55.012.367.084</td>
+<td align="right">50.515.849.836</td>
+<td align="right">871.015.583.376</td>
+</tr>
+<tr class="even">
+<td align="right">29</td>
+<td align="right">1.881.378.461.704</td>
+<td align="right">89.578.160.024</td>
+<td align="right">35.024.968.608</td>
+<td align="right">4.951.217.672</td>
+<td align="right">22.142.283.854</td>
+<td align="right">2.033.075.091.862</td>
+</tr>
+<tr class="odd">
+<td align="right">30</td>
+<td align="right">659.973.919.528</td>
+<td align="right">19.620.276.882</td>
+<td align="right">1.849.362.568</td>
+<td align="right">2.357.734.248</td>
+<td align="right">2.260.888.876</td>
+<td align="right">686.062.182.102</td>
+</tr>
+<tr class="even">
+<td align="right">31</td>
+<td align="right">230.429.518.038</td>
+<td align="right">11.090.064.536</td>
+<td align="right">5.031.873.806</td>
+<td align="right">1.860.014.378</td>
+<td align="right">9.658.410.798</td>
+<td align="right">258.069.881.556</td>
+</tr>
+<tr class="odd">
+<td align="right">32</td>
+<td align="right">412.552.644.786</td>
+<td align="right">113.745.853.936</td>
+<td align="right">1.365.038.808</td>
+<td align="right">8.804.962.598</td>
+<td align="right">33.864.506.194</td>
+<td align="right">570.333.006.322</td>
+</tr>
+<tr class="even">
+<td align="right">33</td>
+<td align="right">77.316.777.626</td>
+<td align="right">10.367.879.380</td>
+<td align="right">734.972.416</td>
+<td align="right">175.407.742</td>
+<td align="right">2.547.236.116</td>
+<td align="right">91.142.273.280</td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">797.525.774.536</td>
+<td align="right">21.700.749.486</td>
+<td align="right">11.794.908.296</td>
+<td align="right">20.737.695.498</td>
+<td align="right">17.838.958.746</td>
+<td align="right">869.598.086.562</td>
+</tr>
+<tr class="even">
+<td align="right">Total</td>
+<td align="right">39.424.912.226.261</td>
+<td align="right">1.887.821.836.952</td>
+<td align="right">554.972.628.962</td>
+<td align="right">520.859.430.384</td>
+<td align="right">1.293.128.624.768</td>
+<td align="right">43.681.694.747.327</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="tabel-5.1-biaya-input-menurut-kode-industri" class="section level2">
+<h2>Tabel 5.1 Biaya Input menurut Kode Industri</h2>
+<pre class="r"><code>kolom2_7_tabel5_1_kbli = stpim23 %&gt;%
+  group_by(KBLI) %&gt;%
+  summarise(Barang_Prod    = sum(r503k6_sum * weight, na.rm = TRUE),
+            Listrik_Prod   = sum(r404d * weight, na.rm = TRUE),
+            Jasa_Prod      = sum(r403a * weight, na.rm = TRUE),
+            Selisih_Stok   = sum((r406b - r406a) * weight, na.rm = TRUE),
+            Output_Lain    = sum((r404a + r404b + r404c + r404f) * weight, na.rm = TRUE), 
+            Total_Output   = Barang_Prod + Listrik_Prod + Jasa_Prod + Selisih_Stok +  Output_Lain
+  )</code></pre>
+<p>Setelah itu, menambahkan baris Total</p>
+<pre class="r"><code># Buat baris baru
+total_5_1_kbli = data.frame(
+  KBLI              = &quot;Total&quot;,
+  Barang_Prod      = sum(kolom2_7_tabel5_1_kbli$Barang_Prod, na.rm = TRUE),
+  Listrik_Prod     = sum(kolom2_7_tabel5_1_kbli$Listrik_Prod, na.rm = TRUE),
+  Jasa_Prod        = sum(kolom2_7_tabel5_1_kbli$Jasa_Prod, na.rm = TRUE),
+  Selisih_Stok     = sum(kolom2_7_tabel5_1_kbli$Selisih_Stok, na.rm = TRUE),
+  Output_Lain      = sum(kolom2_7_tabel5_1_kbli$Output_Lain, na.rm = TRUE),
+  Total_Output     = sum(kolom2_7_tabel5_1_kbli$Total_Output, na.rm = TRUE)
+  )
+
+# Tambahkan baris baru ke Tabel 5.1
+tabel5_1_kbli = rbind(kolom2_7_tabel5_1_kbli, total_5_1_kbli)
+
+# Separator Ribuan
+tabel5_1_kbli = tabel5_1_kbli %&gt;% 
+  mutate(
+    across(
+      .cols = c(2:7), 
+      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+    )
+  )
+
+kable(tabel5_1_kbli, align = &quot;r&quot;)</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="5%" />
+<col width="18%" />
+<col width="12%" />
+<col width="16%" />
+<col width="14%" />
+<col width="14%" />
+<col width="18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">KBLI</th>
+<th align="right">Barang_Prod</th>
+<th align="right">Listrik_Prod</th>
+<th align="right">Jasa_Prod</th>
+<th align="right">Selisih_Stok</th>
+<th align="right">Output_Lain</th>
+<th align="right">Total_Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">18.400.999.078.322</td>
+<td align="right">2.294.218.608</td>
+<td align="right">194.217.230.740</td>
+<td align="right">-1.237.248.252</td>
+<td align="right">11.259.841.626</td>
+<td align="right">18.607.533.121.044</td>
+</tr>
+<tr class="even">
+<td align="right">11</td>
+<td align="right">1.461.218.301.186</td>
+<td align="right">988.300</td>
+<td align="right">32.469.075.132</td>
+<td align="right">2.618.139.336</td>
+<td align="right">826.195.206</td>
+<td align="right">1.497.132.699.160</td>
+</tr>
+<tr class="odd">
+<td align="right">12</td>
+<td align="right">722.445.112.426</td>
+<td align="right">2.384.142</td>
+<td align="right">6.892.012.844</td>
+<td align="right">2.882.271.204</td>
+<td align="right">7.277.340</td>
+<td align="right">732.229.057.956</td>
+</tr>
+<tr class="even">
+<td align="right">13</td>
+<td align="right">25.223.044.246.523</td>
+<td align="right">6.791.746</td>
+<td align="right">214.696.177.548</td>
+<td align="right">-4.766.915.704</td>
+<td align="right">8.514.264.804</td>
+<td align="right">25.441.494.564.917</td>
+</tr>
+<tr class="odd">
+<td align="right">14</td>
+<td align="right">22.297.545.967.189</td>
+<td align="right">13.442.882</td>
+<td align="right">303.454.360.264</td>
+<td align="right">82.761.588.474</td>
+<td align="right">275.761.806</td>
+<td align="right">22.684.051.120.615</td>
+</tr>
+<tr class="even">
+<td align="right">15</td>
+<td align="right">4.161.479.624.816</td>
+<td align="right">6.233.102</td>
+<td align="right">228.186.712.724</td>
+<td align="right">33.142.021.546</td>
+<td align="right">22.852.545.370</td>
+<td align="right">4.445.667.137.558</td>
+</tr>
+<tr class="odd">
+<td align="right">16</td>
+<td align="right">4.664.564.707.264</td>
+<td align="right">22.662.310</td>
+<td align="right">8.356.065.100</td>
+<td align="right">-6.347.483.386</td>
+<td align="right">1.052.102.710</td>
+<td align="right">4.667.648.053.998</td>
+</tr>
+<tr class="even">
+<td align="right">17</td>
+<td align="right">5.897.032.663.612</td>
+<td align="right">23.671.468</td>
+<td align="right">12.476.977.212</td>
+<td align="right">-3.656.921.174</td>
+<td align="right">4.669.597.244</td>
+<td align="right">5.910.545.988.362</td>
+</tr>
+<tr class="odd">
+<td align="right">18</td>
+<td align="right">977.750.761.932</td>
+<td align="right">2.007.772</td>
+<td align="right">918.336.960</td>
+<td align="right">2.903.754.476</td>
+<td align="right">70.787.834</td>
+<td align="right">981.645.648.974</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">2.665.060.649.220</td>
+<td align="right">0</td>
+<td align="right">210.110.454.868</td>
+<td align="right">610.336.088</td>
+<td align="right">3.047.550</td>
+<td align="right">2.875.784.487.726</td>
+</tr>
+<tr class="odd">
+<td align="right">20</td>
+<td align="right">11.241.334.577.378</td>
+<td align="right">38.624.264</td>
+<td align="right">218.601.863.392</td>
+<td align="right">-13.497.706.788</td>
+<td align="right">864.639.166</td>
+<td align="right">11.447.341.997.412</td>
+</tr>
+<tr class="even">
+<td align="right">21</td>
+<td align="right">2.907.878.201.910</td>
+<td align="right">0</td>
+<td align="right">1.023.202.302</td>
+<td align="right">-5.011.449.478</td>
+<td align="right">77.931.658</td>
+<td align="right">2.903.967.886.392</td>
+</tr>
+<tr class="odd">
+<td align="right">22</td>
+<td align="right">8.562.093.322.166</td>
+<td align="right">5.731.868</td>
+<td align="right">123.768.319.070</td>
+<td align="right">10.750.819.166</td>
+<td align="right">7.802.350.488</td>
+<td align="right">8.704.420.542.758</td>
+</tr>
+<tr class="even">
+<td align="right">23</td>
+<td align="right">3.133.263.114.260</td>
+<td align="right">30.000</td>
+<td align="right">8.448.194.184</td>
+<td align="right">132.069.584.202</td>
+<td align="right">272.250.278</td>
+<td align="right">3.274.053.172.924</td>
+</tr>
+<tr class="odd">
+<td align="right">24</td>
+<td align="right">4.748.351.460.180</td>
+<td align="right">4.111.044.962</td>
+<td align="right">129.409.900.774</td>
+<td align="right">430.720.642</td>
+<td align="right">5.817.022.998</td>
+<td align="right">4.888.120.149.556</td>
+</tr>
+<tr class="even">
+<td align="right">25</td>
+<td align="right">7.551.268.133.654</td>
+<td align="right">619.200</td>
+<td align="right">15.058.305.402</td>
+<td align="right">12.836.874.942</td>
+<td align="right">1.908.237.904</td>
+<td align="right">7.581.072.171.102</td>
+</tr>
+<tr class="odd">
+<td align="right">26</td>
+<td align="right">5.372.741.302.426</td>
+<td align="right">409.808</td>
+<td align="right">250.627.474.772</td>
+<td align="right">3.980.330.934</td>
+<td align="right">721.610.640</td>
+<td align="right">5.628.071.128.580</td>
+</tr>
+<tr class="even">
+<td align="right">27</td>
+<td align="right">8.160.503.811.524</td>
+<td align="right">2.197.976</td>
+<td align="right">155.408.574.670</td>
+<td align="right">85.213.984.130</td>
+<td align="right">6.714.944.808</td>
+<td align="right">8.407.843.513.108</td>
+</tr>
+<tr class="odd">
+<td align="right">28</td>
+<td align="right">2.481.025.760.796</td>
+<td align="right">26.780</td>
+<td align="right">71.554.163.410</td>
+<td align="right">17.371.956.722</td>
+<td align="right">3.714.371.516</td>
+<td align="right">2.573.666.279.224</td>
+</tr>
+<tr class="even">
+<td align="right">29</td>
+<td align="right">4.018.990.980.628</td>
+<td align="right">0</td>
+<td align="right">21.652.150.648</td>
+<td align="right">27.655.625.888</td>
+<td align="right">30.739.305.136</td>
+<td align="right">4.099.038.062.300</td>
+</tr>
+<tr class="odd">
+<td align="right">30</td>
+<td align="right">1.280.367.124.772</td>
+<td align="right">0</td>
+<td align="right">3.409.881.194</td>
+<td align="right">-1.192.634.888</td>
+<td align="right">163.858.406</td>
+<td align="right">1.282.748.229.484</td>
+</tr>
+<tr class="even">
+<td align="right">31</td>
+<td align="right">1.546.436.055.278</td>
+<td align="right">165.174</td>
+<td align="right">3.532.857.300</td>
+<td align="right">3.158.492.784</td>
+<td align="right">3.148.990.766</td>
+<td align="right">1.556.276.561.302</td>
+</tr>
+<tr class="odd">
+<td align="right">32</td>
+<td align="right">1.391.761.621.812</td>
+<td align="right">2.265.752</td>
+<td align="right">57.082.512.784</td>
+<td align="right">-9.371.721.012</td>
+<td align="right">171.954.340</td>
+<td align="right">1.439.646.633.676</td>
+</tr>
+<tr class="even">
+<td align="right">33</td>
+<td align="right">357.410.968.632</td>
+<td align="right">250.000</td>
+<td align="right">112.909.900.156</td>
+<td align="right">57.852.132</td>
+<td align="right">412.958.258</td>
+<td align="right">470.791.929.178</td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">2.425.904.015.968</td>
+<td align="right">1.753.964</td>
+<td align="right">26.180.693.590</td>
+<td align="right">13.620.989.844</td>
+<td align="right">108.830.202</td>
+<td align="right">2.465.816.283.568</td>
+</tr>
+<tr class="even">
+<td align="right">Total</td>
+<td align="right">151.650.471.563.874</td>
+<td align="right">6.535.520.078</td>
+<td align="right">2.410.445.397.040</td>
+<td align="right">386.983.261.828</td>
+<td align="right">112.170.678.054</td>
+<td align="right">154.566.606.420.874</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="tabel-6.1-nilai-tambah" class="section level2">
+<h2>Tabel 6.1 Nilai Tambah</h2>
+<pre class="r"><code>kolom2_6_tabel6_1_kbli = stpim23 %&gt;%
+  group_by(KBLI) %&gt;%
+  summarise(Total_Input         = sum((r501k5_sum + r303a + r304c + r305a + r311 + r312 + r313) * weight, na.rm = TRUE),
+            Total_Output        = sum((r503k6_sum + r403a + r404a + r404b + r404c + r404d + r404f + (r406b - r406a)) * weight, na.rm = TRUE),
+            Nilai_Tambah_psr    = Total_Output - Total_Input,
+            Pajak               = sum(r306 * weight, na.rm = TRUE),
+            Nilai_Tambah        = Nilai_Tambah_psr - Pajak
+  )</code></pre>
+<p>Setelah itu, menambahkan baris Total</p>
+<pre class="r"><code># Buat baris baru
+total_6_1_kbli = data.frame(
+  KBLI              = &quot;Total&quot;,
+  Total_Input       = sum(kolom2_6_tabel6_1_kbli$Total_Input, na.rm = TRUE),
+  Total_Output      = sum(kolom2_6_tabel6_1_kbli$Total_Output, na.rm = TRUE),
+  Nilai_Tambah_psr  = sum(kolom2_6_tabel6_1_kbli$Nilai_Tambah_psr, na.rm = TRUE),
+  Pajak             = sum(kolom2_6_tabel6_1_kbli$Pajak, na.rm = TRUE),
+  Nilai_Tambah      = sum(kolom2_6_tabel6_1_kbli$Nilai_Tambah, na.rm = TRUE)
+  )
+
+# Tambahkan baris baru ke Tabel 6.1
+tabel6_1_kbli = rbind(kolom2_6_tabel6_1_kbli, total_6_1_kbli)
+
+# Separator Ribuan
+tabel6_1_kbli = tabel6_1_kbli %&gt;% 
+  mutate(
+    across(
+      .cols = c(2:6), 
+      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+    )
+  )
+
+kable(tabel6_1_kbli, align = &quot;r&quot;)</code></pre>
+<table>
+<colgroup>
+<col width="6%" />
+<col width="18%" />
+<col width="19%" />
+<col width="18%" />
+<col width="18%" />
+<col width="18%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="right">KBLI</th>
+<th align="right">Total_Input</th>
+<th align="right">Total_Output</th>
+<th align="right">Nilai_Tambah_psr</th>
+<th align="right">Pajak</th>
+<th align="right">Nilai_Tambah</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">10</td>
+<td align="right">473.959.078.446</td>
+<td align="right">2.571.058.524.242</td>
+<td align="right">2.097.099.445.796</td>
+<td align="right">254.681.433.366</td>
+<td align="right">1.842.418.012.430</td>
+</tr>
+<tr class="even">
+<td align="right">11</td>
+<td align="right">160.351.264.930</td>
+<td align="right">421.199.989.594</td>
+<td align="right">260.848.724.664</td>
+<td align="right">16.367.604.434</td>
+<td align="right">244.481.120.230</td>
+</tr>
+<tr class="odd">
+<td align="right">12</td>
+<td align="right">32.490.834.952</td>
+<td align="right">71.831.957.282</td>
+<td align="right">39.341.122.330</td>
+<td align="right">398.553.319.274</td>
+<td align="right">-359.212.196.944</td>
+</tr>
+<tr class="even">
+<td align="right">13</td>
+<td align="right">119.852.021.854</td>
+<td align="right">413.193.673.062</td>
+<td align="right">293.341.651.208</td>
+<td align="right">25.649.392.370</td>
+<td align="right">267.692.258.838</td>
+</tr>
+<tr class="odd">
+<td align="right">14</td>
+<td align="right">99.882.705.203</td>
+<td align="right">792.375.690.684</td>
+<td align="right">692.492.985.481</td>
+<td align="right">10.294.408.360</td>
+<td align="right">682.198.577.121</td>
+</tr>
+<tr class="even">
+<td align="right">15</td>
+<td align="right">896.262.928.324</td>
+<td align="right">1.379.698.637.010</td>
+<td align="right">483.435.708.686</td>
+<td align="right">189.453.334.830</td>
+<td align="right">293.982.373.856</td>
+</tr>
+<tr class="odd">
+<td align="right">16</td>
+<td align="right">72.901.913.112</td>
+<td align="right">176.739.772.768</td>
+<td align="right">103.837.859.656</td>
+<td align="right">96.861.575.256</td>
+<td align="right">6.976.284.400</td>
+</tr>
+<tr class="even">
+<td align="right">17</td>
+<td align="right">210.222.715.970</td>
+<td align="right">833.814.692.252</td>
+<td align="right">623.591.976.282</td>
+<td align="right">36.011.929.034</td>
+<td align="right">587.580.047.248</td>
+</tr>
+<tr class="odd">
+<td align="right">18</td>
+<td align="right">17.199.534.512</td>
+<td align="right">19.296.958.426</td>
+<td align="right">2.097.423.914</td>
+<td align="right">17.802.593.320</td>
+<td align="right">-15.705.169.406</td>
+</tr>
+<tr class="even">
+<td align="right">19</td>
+<td align="right">112.557.307.346</td>
+<td align="right">33.419.433.554</td>
+<td align="right">-79.137.873.792</td>
+<td align="right">3.720.487.452</td>
+<td align="right">-82.858.361.244</td>
+</tr>
+<tr class="odd">
+<td align="right">20</td>
+<td align="right">545.054.544.184</td>
+<td align="right">1.595.554.161.976</td>
+<td align="right">1.050.499.617.792</td>
+<td align="right">307.030.022.246</td>
+<td align="right">743.469.595.546</td>
+</tr>
+<tr class="even">
+<td align="right">21</td>
+<td align="right">55.562.464.824</td>
+<td align="right">56.536.992.650</td>
+<td align="right">974.527.826</td>
+<td align="right">2.856.117.636</td>
+<td align="right">-1.881.589.810</td>
+</tr>
+<tr class="odd">
+<td align="right">22</td>
+<td align="right">213.724.563.768</td>
+<td align="right">1.033.645.986.190</td>
+<td align="right">819.921.422.422</td>
+<td align="right">136.855.078.608</td>
+<td align="right">683.066.343.814</td>
+</tr>
+<tr class="even">
+<td align="right">23</td>
+<td align="right">180.086.698.378</td>
+<td align="right">311.373.128.274</td>
+<td align="right">131.286.429.896</td>
+<td align="right">84.964.412.380</td>
+<td align="right">46.322.017.516</td>
+</tr>
+<tr class="odd">
+<td align="right">24</td>
+<td align="right">634.559.796.232</td>
+<td align="right">442.468.904.526</td>
+<td align="right">-192.090.891.706</td>
+<td align="right">191.335.759.544</td>
+<td align="right">-383.426.651.250</td>
+</tr>
+<tr class="even">
+<td align="right">25</td>
+<td align="right">1.077.313.363.564</td>
+<td align="right">946.888.182.036</td>
+<td align="right">-130.425.181.528</td>
+<td align="right">136.729.196.594</td>
+<td align="right">-267.154.378.122</td>
+</tr>
+<tr class="odd">
+<td align="right">26</td>
+<td align="right">7.879.180.468</td>
+<td align="right">42.074.413.384</td>
+<td align="right">34.195.232.916</td>
+<td align="right">142.285.270.766</td>
+<td align="right">-108.090.037.850</td>
+</tr>
+<tr class="even">
+<td align="right">27</td>
+<td align="right">2.343.815.648.406</td>
+<td align="right">2.871.544.716.440</td>
+<td align="right">527.729.068.034</td>
+<td align="right">60.297.826.614</td>
+<td align="right">467.431.241.420</td>
+</tr>
+<tr class="odd">
+<td align="right">28</td>
+<td align="right">199.282.207.190</td>
+<td align="right">200.128.445.754</td>
+<td align="right">846.238.564</td>
+<td align="right">41.711.026.648</td>
+<td align="right">-40.864.788.084</td>
+</tr>
+<tr class="even">
+<td align="right">29</td>
+<td align="right">209.116.025.232</td>
+<td align="right">444.809.252.424</td>
+<td align="right">235.693.227.192</td>
+<td align="right">26.459.371.812</td>
+<td align="right">209.233.855.380</td>
+</tr>
+<tr class="odd">
+<td align="right">30</td>
+<td align="right">32.535.892.972</td>
+<td align="right">40.178.521.234</td>
+<td align="right">7.642.628.262</td>
+<td align="right">5.418.814.996</td>
+<td align="right">2.223.813.266</td>
+</tr>
+<tr class="even">
+<td align="right">31</td>
+<td align="right">97.047.664.844</td>
+<td align="right">384.876.918.414</td>
+<td align="right">287.829.253.570</td>
+<td align="right">6.811.286.526</td>
+<td align="right">281.017.967.044</td>
+</tr>
+<tr class="odd">
+<td align="right">32</td>
+<td align="right">66.141.584.528</td>
+<td align="right">34.686.021.860</td>
+<td align="right">-31.455.562.668</td>
+<td align="right">98.983.580.848</td>
+<td align="right">-130.439.143.516</td>
+</tr>
+<tr class="even">
+<td align="right">33</td>
+<td align="right">2.216.543.176</td>
+<td align="right">7.018.606.202</td>
+<td align="right">4.802.063.026</td>
+<td align="right">6.529.675.090</td>
+<td align="right">-1.727.612.064</td>
+</tr>
+<tr class="odd">
+<td align="right">NA</td>
+<td align="right">3.392.785.056</td>
+<td align="right">3.440.111.012</td>
+<td align="right">47.325.956</td>
+<td align="right">84.512.156.546</td>
+<td align="right">-84.464.830.590</td>
+</tr>
+<tr class="even">
+<td align="right">Total</td>
+<td align="right">7.863.409.267.471</td>
+<td align="right">15.127.853.691.250</td>
+<td align="right">7.264.444.423.779</td>
+<td align="right">2.382.175.674.550</td>
+<td align="right">4.882.268.749.229</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="export-ke-excel" class="section level2">
+<h2>Export ke Excel</h2>
+<pre class="r"><code>wb = createWorkbook()
+
+addWorksheet(wb, &quot;Tabel 1.1&quot;)
+writeData(wb, &quot;Tabel 1.1&quot;, &quot;Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode Industri, 2023&quot;, startRow = 1, startCol = 1)
+writeData(wb, &quot;Tabel 1.1&quot;, tabel1_1_kbli, startRow = 3, startCol = 1)
+
+addWorksheet(wb, &quot;Tabel 2.1&quot;)
+writeData(wb, &quot;Tabel 2.1&quot;, &quot;Tabel 2.1 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Kode Industri, 2023&quot;, startRow = 1, startCol = 1)
+writeData(wb, &quot;Tabel 2.1&quot;, tabel2_1_kbli, startRow = 3, startCol = 1)
+
+addWorksheet(wb, &quot;Tabel 3.1&quot;)
+writeData(wb, &quot;Tabel 3.1&quot;, &quot;Tabel 3.1 Pengeluaran untuk Pekerja menurut Kode Industri dan Jenis Pengeluaran, 2023&quot;, startRow = 1, startCol = 1)
+writeData(wb, &quot;Tabel 3.1&quot;, tabel3_1_kbli, startRow = 3, startCol = 1)
+
+addWorksheet(wb, &quot;Tabel 4.1&quot;)
+writeData(wb, &quot;Tabel 4.1&quot;, &quot;Tabel 4.1 Biaya Input menurut Kode Industri, 2023&quot;, startRow = 1, startCol = 1)
+writeData(wb, &quot;Tabel 4.1&quot;, tabel4_1_kbli, startRow = 3, startCol = 1)
+
+addWorksheet(wb, &quot;Tabel 5.1&quot;)
+writeData(wb, &quot;Tabel 5.1&quot;, &quot;Tabel 5.1 Nilai Output menurut Kode Industri, 2023&quot;, startRow = 1, startCol = 1)
+writeData(wb, &quot;Tabel 5.1&quot;, tabel5_1_kbli, startRow = 3, startCol = 1)
+
+addWorksheet(wb, &quot;Tabel 6.1&quot;)
+writeData(wb, &quot;Tabel 6.1&quot;, &quot;Tabel 6.1 Nilai Tambah menurut Kode Industri, 2023&quot;, startRow = 1, startCol = 1)
+writeData(wb, &quot;Tabel 6.1&quot;, tabel6_1_kbli, startRow = 3, startCol = 1)
+
+# Menyimpan workbook ke file Excel
+saveWorkbook(wb, &quot;Rantab STPIM.xlsx&quot;, overwrite = TRUE)</code></pre>
+</div>
 </div>
 
 
