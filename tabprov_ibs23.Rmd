@@ -1,5 +1,6 @@
 ---
 title: "Draf Tabel STPIM 2023"
+author: "Ayu Paramudita"
 output: 
   html_document:
     toc: yes
@@ -28,7 +29,8 @@ library(openxlsx)
 ## Input Data
 
 ```{r input data}
-stpim23    = read_excel("SKIM-STPIM.xlsx")
+#stpim23    = read_excel("SKIM-STPIM.xlsx")
+stpim23    = read_excel("STPIM23.xlsx")
 jumlah     = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
 masterprov = read_excel("Master_Provinsi.xlsx")
 
