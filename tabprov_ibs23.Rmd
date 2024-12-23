@@ -419,5 +419,5 @@ writeData(wb, "Tabel 6.2", "Tabel 6.2 Nilai Tambah menurut Provinsi, 2023", star
 writeData(wb, "Tabel 6.2", tabel6_2_prov, startRow = 3, startCol = 1)
 
 # Menyimpan workbook ke file Excel
-saveWorkbook(wb, "Rantab STPIM Prov.xlsx", overwrite = TRUE)
+saveWorkbook(wb, "Rantab STPIM.xlsx", overwrite = TRUE)
 ```
