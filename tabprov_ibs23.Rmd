@@ -395,23 +395,29 @@ kable(tabel6_2_prov, align = "r")
 wb = createWorkbook()
 
 addWorksheet(wb, "Tabel 1.2")
-writeData(wb, "Tabel 1.2", tabel1_2_prov)
+writeData(wb, "Tabel 1.2", "Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut Provinsi, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 1.2", tabel1_2_prov, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 2.2")
-writeData(wb, "Tabel 2.2", tabel2_2_prov)
+writeData(wb, "Tabel 2.2", "Tabel 2.2 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Provinsi, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 2.2", tabel2_2_prov, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 3.2")
-writeData(wb, "Tabel 3.2", tabel3_2_prov)
+writeData(wb, "Tabel 3.2", "Tabel 3.2 Pengeluaran untuk Pekerja menurut Provinsi dan Jenis Pengeluaran, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 3.2", tabel3_2_prov, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 4.2")
-writeData(wb, "Tabel 4.2", tabel4_2_prov)
+writeData(wb, "Tabel 4.2", "Tabel 4.2 Biaya Input menurut Provinsi, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 4.2", tabel4_2_prov, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 5.2")
-writeData(wb, "Tabel 5.2", tabel5_2_prov)
+writeData(wb, "Tabel 5.2", "Tabel 5.2 Nilai Output menurut Provinsi, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 5.2", tabel5_2_prov, startRow = 3, startCol = 1)
 
 addWorksheet(wb, "Tabel 6.2")
-writeData(wb, "Tabel 6.2", tabel6_2_prov)
+writeData(wb, "Tabel 6.2", "Tabel 6.2 Nilai Tambah menurut Provinsi, 2023", startRow = 1, startCol = 1)
+writeData(wb, "Tabel 6.2", tabel6_2_prov, startRow = 3, startCol = 1)
 
 # Menyimpan workbook ke file Excel
-saveWorkbook(wb, "Rantab STPIM.xlsx", overwrite = TRUE)
+saveWorkbook(wb, "Rantab STPIM.xlsx", overwrite = FALSE)
 ```
