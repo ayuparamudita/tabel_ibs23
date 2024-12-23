@@ -1,0 +1,93 @@
+---
+title: "persiapan_stpim"
+author: "Putri Hera Lusmana"
+date: "2024-12-23"
+output: 
+  html_document:
+    toc: yes
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+# Pendahuluan
+
+File ini adalah file untuk melakukan penyiapan file STPIM. Jadi, pada file ini akan dilakukan penggabungan kolom penimbang dari metodologi dengan file hasil export dari webentry.
+
+```{r package}
+library(readxl)
+library(dplyr)
+library(openxlsx)
+```
+
+# Cek KIP
+
+Cek KIP ini adalah mengecek apakah semua KIP dari file metodologi ada semua di file hasil export dari webentry.
+
+```{r input data}
+stpim23_web = read_excel("STPIM (CAWI) NASIONAL tahun 2024.xlsx")
+penimbang = read_excel("Penimbang.xlsx")
+```
+
+```{r cek kip}
+all(penimbang$kipb %in% stpim23_web$kip)
+```
+
+# Gabung File Export dan Metod
+
+Karena hasil dari tahap sebelumnya TRUE, maka kita bisa langsung gabungkan file dari metodologi dengan hasil export dari webentry.
+
+```{r gabung stpim dan penimbang}
+stpim23_web$KBLI = substr(stpim23_web$r201_kode, 1, 2)
+
+stpim23 = penimbang %>%
+  select(kip = kipb, kbli_final, weight = w) %>%
+  left_join(stpim23_web, by = "kip")
+```
+
+# Cek KBLI
+
+Cek KBLI ini adalah mengecek apakah semua KBLI dari file metodologi itu sama dengan hasil export dari webentry.
+
+```{r cek kbli}
+stpim23$match_kbli = stpim23$kbli_final == stpim23$KBLI
+
+unique(stpim23$match_kbli)
+```
+
+Hasil diatas TRUE itu artinya KBLI nya sama, sedangkan FALSE itu artinya tidak sama. Adapun kalau NA itu artinya ada KIP yang belum terisi kbli dari hasil export. Fokus sekarang adalah cek KIP mana yang KBLI nya beda.
+
+```{r cek kbli beda}
+stpim23_kblibeda = stpim23 %>%
+  filter(match_kbli == "FALSE") %>%
+  select(kip, kbli_final, KBLI, match_kbli)
+```
+
+Jika yang dipakai adalah KBLI dari file metodologi, maka hapus kolom KBLI lalu ganti nama kolom kbli_final dengan KBLI. Setelah itu export datanya.
+
+```{r export stpim23}
+stpim23_final = stpim23 %>%
+  select(-KBLI) %>%
+  rename(KBLI = kbli_final)
+```
+
+# Ganti Nama Kolom Bahan Baku dan Produksi
+
+Tahapan ini digunakan nanti untuk penggabungan dengan file SKIM. Pertama, membuat kolom penjumlahan bahan baku & penolong *(r501k5_sum)*. Setelah itu, ganti nama variabel nilai produksi yang awalnya *r401a* menjadi *r503k6_sum*.
+
+```{r r501k5_sum dan r503k6_sum}
+stpim23_final = stpim23_final %>%
+  mutate(r501k5_sum = ifelse(is.na(r302a_1), 0, r302a_1) + ifelse(is.na(r302b_1), 0, r302b_1))
+
+colnames(stpim23_final)[colnames(stpim23_final) == "r401a"] = "r503k6_sum"
+```
+
+# Export File STPIM23
+
+```{r export stpim23}
+write.xlsx(stpim23_final, "STPIM23.xlsx")
+```
+
+

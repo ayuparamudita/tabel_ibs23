@@ -4,7 +4,6 @@ output:
   html_document:
     toc: yes
     toc_float: true
-    code_folding: hide
 date: "2024-12-16"
 ---
 
@@ -33,16 +32,7 @@ dpa24 = read_excel("DPA (CAPI) NASIONAL tahun 2024.xlsx")
 
 ## Persiapan File STPIM
 
-Pada tahapan persiapan STPIM ini yang pertama dilakukan adalah membuat kolom baru, yaitu kolom penjumlahan bahan baku & penolong *(r501k5_sum)*. Setelah itu, ganti nama variabel nilai produksi yang awalnya *r401a* menjadi *r503k6_sum*. Tujuannya adalah agar nama kolom bahan baku & penolong dan nilai produksi pada file STPIM sama dengan file SKIM.
-
-```{r r501k5_sum dan r503k6_sum}
-stpim23 = stpim23 %>%
-  mutate(r501k5_sum = ifelse(is.na(r302a_1), 0, r302a_1) + ifelse(is.na(r302b_1), 0, r302b_1))
-
-colnames(stpim23)[colnames(stpim23) == "r401a"] = "r503k6_sum"
-```
-
-Selanjutnya, data export STPIM ini juga harus difilter dulu pada kolom *tindak_lanjut_desk*. Yang dipilih adalah *NON RESPON*, *PENGGANTI & ELIGIBLE*, *UTAMA & ELIGIBLE*.
+Data export STPIM ini juga harus difilter dulu pada kolom *tindak_lanjut_desk*. Yang dipilih adalah *NON RESPON*, *PENGGANTI & ELIGIBLE*, *UTAMA & ELIGIBLE*.
 
 ```{r filter tindak_lanjut}
 stpim23 = stpim23 %>%

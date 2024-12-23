@@ -4,7 +4,6 @@ output:
   html_document:
     toc: yes
     toc_float: true
-    code_folding: hide
 date: "2024-12-12"
 ---
 
@@ -12,7 +11,7 @@ date: "2024-12-12"
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-## Pendahuluan
+# Pendahuluan
 
 Berikut ini adalah kode untuk membuat tabulasi Rantab STPIM 2023. Jumlah tabel yang akan dihasilkan adalah sebanyak 12 tabel.
 
@@ -24,14 +23,14 @@ library(knitr)
 library(openxlsx)
 ```
 
-## Input Data
+# Input Data
 
 ```{r input data}
-stpim23 = read_excel("SKIM-STPIM.xlsx")
+stpim23 = read_excel("STPIM23.xlsx")
 jumlah  = read_excel("Jumlah Populasi STPIM dan SKIM 2023.xlsx")
 ```
 
-## Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode Industri
+# Tabel 1.1 Jumlah Perusahaan dan Banyaknya Pekerja menurut Kode Industri
 
 ```{r tabel 1.1 kolom 2 kbli}
 jum_kbli = jumlah[, 5:28]
@@ -49,8 +48,6 @@ kolom2_tabel1_1_kbli = t_jum_kbli %>%
 ```
 
 ```{r tabel 1.1 kolom 3 kbli}
-stpim23$KBLI = substr(stpim23$r201_kode, 1, 2)
-
 kolom3_tabel1_1_kbli = stpim23 %>%
   group_by(KBLI) %>%                 
   summarise(Tenaga_Kerja = sum(r206a * weight, na.rm = TRUE))
@@ -86,7 +83,7 @@ kable(tabel1_1_kbli, align = "r")
 ```
 
 
-## Tabel 2.1 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Kode Industri
+# Tabel 2.1 Jumlah Perusahaan dan Jenis Tenaga Kerja menurut Kode Industri
 
 ```{r tabel 2.1 kolom 2 kbli}
 kolom2_tabel2_1_kbli = t_jum_kbli %>%
@@ -191,7 +188,7 @@ kable(tabel3_1_kbli, align = "r")
 ```
 
 
-## Tabel 4.1 Biaya Input menurut Kode Industri
+# Tabel 4.1 Biaya Input menurut Kode Industri
 
 ```{r tabel 4.1 kolom 2-7 kbli}
 kolom2_7_tabel4_1_kbli = stpim23 %>%
@@ -235,7 +232,7 @@ kable(tabel4_1_kbli, align = "r")
 ```
 
 
-## Tabel 5.1 Biaya Input menurut Kode Industri
+# Tabel 5.1 Biaya Input menurut Kode Industri
 
 ```{r tabel 5.1 kolom 2-7 kbli}
 kolom2_7_tabel5_1_kbli = stpim23 %>%
@@ -279,7 +276,7 @@ kable(tabel5_1_kbli, align = "r")
 ```
 
 
-## Tabel 6.1 Nilai Tambah
+# Tabel 6.1 Nilai Tambah
 
 ```{r tabel 6.1 kolom 2-6 kbli}
 kolom2_6_tabel6_1_kbli = stpim23 %>%
@@ -320,7 +317,7 @@ tabel6_1_kbli = tabel6_1_kbli %>%
 kable(tabel6_1_kbli, align = "r")
 ```
 
-## Export ke Excel
+# Export ke Excel
 
 ```{r export tabel kbli ke excel}
 wb = createWorkbook()
