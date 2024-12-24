@@ -9,6 +9,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(rmarkdown)
 
+```
+
+Render file __tabulasi per KBLI__ dari Putri dan file __tabulasi per provinsi__ dari Ayu.
+```{r}
+
 # Render the first R Markdown file to create the Excel output
 render("tabel_ibs23.Rmd")
 
