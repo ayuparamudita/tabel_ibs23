@@ -70,7 +70,7 @@ tabel1_2_prov <- tabel1_2_prov |>
   mutate(
     across(
       .cols = c(Perusahaan, Tenaga_Kerja), 
-      .fns = ~ scales::comma(., big.mark = ".")
+      .fns = ~ format(round(., 0), big.mark = ".", decimal.mark = ",", scientific = FALSE)
     )
   )
 
@@ -122,15 +122,16 @@ tabel2_2_prov <- kolom2_tabel1_2 |>
   mutate(Provinsi = if_else(Provinsi == "Total", "Indonesia", Provinsi))
 
 # SEPARATOR RIBUAN
-tabel2_2_prov <- tabel2_2_prov |> 
+tabel2_2_prov <- tabel2_2_prov %>%
   mutate(
     across(
       .cols = c(Perusahaan, Tenaga_Kerja_L, Tenaga_Kerja_P, Tenaga_Kerja_sumLP, 
                 Tenaga_Kerja_Prod, Tenaga_Kerja_Lain, Tenaga_Kerja_sumPrdLn, 
-                Tenaga_Kerja_Asi, Tenaga_Kerja_Total), 
-      .fns = ~ scales::comma(., big.mark = ".")
+                Tenaga_Kerja_Asi, Tenaga_Kerja_Total),
+      .fns = ~ format(round(., 0), big.mark = ".", decimal.mark = ",", scientific = FALSE)
     )
   )
+
 
 ## MATCH KODE & NAMA PROV
 tabel2_2_prov <- tabel2_2_prov |>
@@ -189,8 +190,8 @@ tabel3_2_prov <- tabel3_2_prov |>
       .cols = c(Upah_Prod, PengPekLain_Prod, TotalPengPek_Prod, 
                 Upah_Lain, PengPekLain_Lain, TotalPengPek_Lain, 
                 TotalPengPek), 
-      .fns = ~ scales::comma(., big.mark = ".")
-    )
+      .fns = ~ format(round(., 0), big.mark = ".", decimal.mark = ",", scientific = FALSE)
+      )
   )
 
 ## MATCH KODE & NAMA PROV
@@ -250,7 +251,7 @@ tabel4_2_prov <- tabel4_2_prov |>
     across(
       .cols = c(Bahan_BakuPnl, Bakar_Listrik, Sewa_Gd, 
                 Jasa_Input, Peng_Lain, Total_Input), 
-      .fns = ~ scales::comma(., big.mark = ".")
+      .fns = ~ format(round(., 0), big.mark = ".", decimal.mark = ",", scientific = FALSE)
     )
   )
 
@@ -311,7 +312,7 @@ tabel5_2_prov <- tabel5_2_prov |>
     across(
       .cols = c(Barang_Prod, Listrik_Prod, Jasa_Prod, 
                 Selisih_Stok, Output_Lain, Total_Output), 
-      .fns = ~ scales::comma(., big.mark = ".")
+      .fns = ~ format(round(., 0), big.mark = ".", decimal.mark = ",", scientific = FALSE)
     )
   )
 
@@ -370,7 +371,7 @@ tabel6_2_prov <- tabel6_2_prov |>
     across(
       .cols = c(Total_Input, Total_Output, Nilai_Tambah_psr, 
                 Pajak, Nilai_Tambah), 
-      .fns = ~ scales::comma(., big.mark = ".")
+      .fns = ~ format(round(., 0), big.mark = ".", decimal.mark = ",", scientific = FALSE)
     )
   )
 

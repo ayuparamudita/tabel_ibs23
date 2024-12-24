@@ -1627,7 +1627,7 @@ tabel1_2_prov &lt;- tabel1_2_prov |&gt;
   mutate(
     across(
       .cols = c(Perusahaan, Tenaga_Kerja), 
-      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+      .fns = ~ format(round(., 0), big.mark = &quot;.&quot;, decimal.mark = &quot;,&quot;, scientific = FALSE)
     )
   )
 
@@ -1883,15 +1883,16 @@ tabel2_2_prov &lt;- kolom2_tabel1_2 |&gt;
   mutate(Provinsi = if_else(Provinsi == &quot;Total&quot;, &quot;Indonesia&quot;, Provinsi))
 
 # SEPARATOR RIBUAN
-tabel2_2_prov &lt;- tabel2_2_prov |&gt; 
+tabel2_2_prov &lt;- tabel2_2_prov %&gt;%
   mutate(
     across(
       .cols = c(Perusahaan, Tenaga_Kerja_L, Tenaga_Kerja_P, Tenaga_Kerja_sumLP, 
                 Tenaga_Kerja_Prod, Tenaga_Kerja_Lain, Tenaga_Kerja_sumPrdLn, 
-                Tenaga_Kerja_Asi, Tenaga_Kerja_Total), 
-      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+                Tenaga_Kerja_Asi, Tenaga_Kerja_Total),
+      .fns = ~ format(round(., 0), big.mark = &quot;.&quot;, decimal.mark = &quot;,&quot;, scientific = FALSE)
     )
   )
+
 
 ## MATCH KODE &amp; NAMA PROV
 tabel2_2_prov &lt;- tabel2_2_prov |&gt;
@@ -1937,468 +1938,468 @@ kable(tabel2_2_prov, align = &quot;r&quot;)</code></pre>
 <td align="right">Aceh</td>
 <td align="right">101</td>
 <td align="right">7.505</td>
-<td align="right">1.065.9</td>
+<td align="right">1.066</td>
 <td align="right">8.571</td>
 <td align="right">6.064</td>
 <td align="right">2.507</td>
 <td align="right">8.571</td>
-<td align="right">13.77</td>
+<td align="right">14</td>
 <td align="right">8.571</td>
 </tr>
 <tr class="even">
 <td align="right">Sumatera Utara</td>
 <td align="right">1.257</td>
 <td align="right">177.417</td>
-<td align="right">47.758.5</td>
+<td align="right">47.759</td>
 <td align="right">225.176</td>
 <td align="right">173.347</td>
 <td align="right">51.828</td>
 <td align="right">225.176</td>
-<td align="right">664.91</td>
+<td align="right">665</td>
 <td align="right">225.176</td>
 </tr>
 <tr class="odd">
 <td align="right">Sumatera Barat</td>
 <td align="right">217</td>
 <td align="right">18.637</td>
-<td align="right">4.930.9</td>
+<td align="right">4.931</td>
 <td align="right">23.568</td>
 <td align="right">18.005</td>
 <td align="right">5.563</td>
 <td align="right">23.568</td>
-<td align="right">313.49</td>
+<td align="right">313</td>
 <td align="right">23.568</td>
 </tr>
 <tr class="even">
 <td align="right">Riau</td>
 <td align="right">389</td>
 <td align="right">80.033</td>
-<td align="right">17.783.6</td>
+<td align="right">17.784</td>
 <td align="right">97.817</td>
 <td align="right">65.522</td>
 <td align="right">32.295</td>
 <td align="right">97.817</td>
-<td align="right">600.76</td>
+<td align="right">601</td>
 <td align="right">97.817</td>
 </tr>
 <tr class="odd">
 <td align="right">Jambi</td>
 <td align="right">185</td>
 <td align="right">18.932</td>
-<td align="right">4.012.3</td>
+<td align="right">4.012</td>
 <td align="right">22.945</td>
 <td align="right">16.663</td>
 <td align="right">5.897</td>
 <td align="right">22.559</td>
-<td align="right">83.64</td>
+<td align="right">84</td>
 <td align="right">23.092</td>
 </tr>
 <tr class="even">
 <td align="right">Sumatera Selatan</td>
 <td align="right">309</td>
 <td align="right">44.447</td>
-<td align="right">7.932.5</td>
+<td align="right">7.932</td>
 <td align="right">52.380</td>
 <td align="right">39.799</td>
 <td align="right">12.581</td>
 <td align="right">52.380</td>
-<td align="right">365.31</td>
+<td align="right">365</td>
 <td align="right">52.380</td>
 </tr>
 <tr class="odd">
 <td align="right">Bengkulu</td>
 <td align="right">76</td>
 <td align="right">6.258</td>
-<td align="right">1.268.2</td>
+<td align="right">1.268</td>
 <td align="right">7.526</td>
 <td align="right">5.988</td>
 <td align="right">1.538</td>
 <td align="right">7.526</td>
-<td align="right">0.00</td>
+<td align="right">0</td>
 <td align="right">7.526</td>
 </tr>
 <tr class="even">
 <td align="right">Lampung</td>
 <td align="right">410</td>
 <td align="right">41.453</td>
-<td align="right">18.018.8</td>
+<td align="right">18.019</td>
 <td align="right">59.472</td>
 <td align="right">46.635</td>
 <td align="right">12.736</td>
 <td align="right">59.371</td>
-<td align="right">162.29</td>
+<td align="right">162</td>
 <td align="right">75.072</td>
 </tr>
 <tr class="odd">
 <td align="right">Kepulauan Bangka Belitung</td>
 <td align="right">144</td>
 <td align="right">16.687</td>
-<td align="right">5.628.3</td>
+<td align="right">5.628</td>
 <td align="right">22.315</td>
 <td align="right">17.884</td>
 <td align="right">4.431</td>
 <td align="right">22.315</td>
-<td align="right">224.13</td>
+<td align="right">224</td>
 <td align="right">22.315</td>
 </tr>
 <tr class="even">
 <td align="right">Kepulauan Riau</td>
 <td align="right">708</td>
 <td align="right">100.859</td>
-<td align="right">95.051.4</td>
+<td align="right">95.051</td>
 <td align="right">195.910</td>
 <td align="right">180.287</td>
 <td align="right">15.624</td>
 <td align="right">195.910</td>
-<td align="right">3.998.07</td>
+<td align="right">3.998</td>
 <td align="right">195.910</td>
 </tr>
 <tr class="odd">
 <td align="right">DKI Jakarta</td>
 <td align="right">1.547</td>
 <td align="right">131.732</td>
-<td align="right">52.210.8</td>
+<td align="right">52.211</td>
 <td align="right">183.943</td>
 <td align="right">133.656</td>
 <td align="right">50.287</td>
 <td align="right">183.943</td>
-<td align="right">1.457.90</td>
+<td align="right">1.458</td>
 <td align="right">184.003</td>
 </tr>
 <tr class="even">
 <td align="right">Jawa Barat</td>
 <td align="right">8.735</td>
 <td align="right">904.929</td>
-<td align="right">546.601.5</td>
+<td align="right">546.601</td>
 <td align="right">1.451.530</td>
 <td align="right">1.148.667</td>
 <td align="right">302.544</td>
 <td align="right">1.451.211</td>
-<td align="right">8.178.43</td>
+<td align="right">8.178</td>
 <td align="right">1.451.491</td>
 </tr>
 <tr class="odd">
 <td align="right">Jawa Tengah</td>
 <td align="right">4.551</td>
 <td align="right">438.862</td>
-<td align="right">480.399.1</td>
+<td align="right">480.399</td>
 <td align="right">919.262</td>
 <td align="right">792.266</td>
 <td align="right">126.960</td>
 <td align="right">919.226</td>
-<td align="right">5.435.98</td>
+<td align="right">5.436</td>
 <td align="right">919.262</td>
 </tr>
 <tr class="even">
 <td align="right">DI Yogyakarta</td>
 <td align="right">586</td>
 <td align="right">28.389</td>
-<td align="right">20.818.1</td>
+<td align="right">20.818</td>
 <td align="right">49.208</td>
 <td align="right">38.741</td>
 <td align="right">10.466</td>
 <td align="right">49.208</td>
-<td align="right">142.53</td>
+<td align="right">143</td>
 <td align="right">49.208</td>
 </tr>
 <tr class="odd">
 <td align="right">Jawa Timur</td>
 <td align="right">6.372</td>
 <td align="right">725.972</td>
-<td align="right">483.017.2</td>
+<td align="right">483.017</td>
 <td align="right">1.208.989</td>
 <td align="right">983.060</td>
 <td align="right">225.929</td>
 <td align="right">1.208.989</td>
-<td align="right">15.188.90</td>
+<td align="right">15.189</td>
 <td align="right">1.208.989</td>
 </tr>
 <tr class="even">
 <td align="right">Banten</td>
 <td align="right">3.788</td>
 <td align="right">538.065</td>
-<td align="right">249.760.6</td>
+<td align="right">249.761</td>
 <td align="right">787.826</td>
 <td align="right">606.499</td>
 <td align="right">181.329</td>
 <td align="right">787.828</td>
-<td align="right">3.831.77</td>
+<td align="right">3.832</td>
 <td align="right">790.972</td>
 </tr>
 <tr class="odd">
 <td align="right">Bali</td>
 <td align="right">456</td>
 <td align="right">13.504</td>
-<td align="right">15.663.9</td>
+<td align="right">15.664</td>
 <td align="right">29.168</td>
 <td align="right">22.719</td>
 <td align="right">6.449</td>
 <td align="right">29.168</td>
-<td align="right">85.95</td>
+<td align="right">86</td>
 <td align="right">29.168</td>
 </tr>
 <tr class="even">
 <td align="right">Nusa Tenggara Barat</td>
 <td align="right">211</td>
 <td align="right">5.133</td>
-<td align="right">2.991.0</td>
+<td align="right">2.991</td>
 <td align="right">8.124</td>
 <td align="right">5.763</td>
 <td align="right">2.361</td>
 <td align="right">8.124</td>
-<td align="right">9.62</td>
+<td align="right">10</td>
 <td align="right">8.124</td>
 </tr>
 <tr class="odd">
 <td align="right">Nusa Tenggara Timur</td>
 <td align="right">75</td>
 <td align="right">1.573</td>
-<td align="right">863.6</td>
+<td align="right">864</td>
 <td align="right">2.437</td>
 <td align="right">1.679</td>
 <td align="right">757</td>
 <td align="right">2.437</td>
-<td align="right">0.00</td>
+<td align="right">0</td>
 <td align="right">2.437</td>
 </tr>
 <tr class="even">
 <td align="right">Kalimantan Barat</td>
 <td align="right">242</td>
 <td align="right">35.739</td>
-<td align="right">11.035.8</td>
+<td align="right">11.036</td>
 <td align="right">46.775</td>
 <td align="right">38.339</td>
 <td align="right">8.437</td>
 <td align="right">46.775</td>
-<td align="right">860.81</td>
+<td align="right">861</td>
 <td align="right">46.775</td>
 </tr>
 <tr class="odd">
 <td align="right">Kalimantan Tengah</td>
 <td align="right">167</td>
 <td align="right">17.800</td>
-<td align="right">2.708.9</td>
+<td align="right">2.709</td>
 <td align="right">20.509</td>
 <td align="right">15.980</td>
 <td align="right">4.530</td>
 <td align="right">20.509</td>
-<td align="right">19.01</td>
+<td align="right">19</td>
 <td align="right">20.509</td>
 </tr>
 <tr class="even">
 <td align="right">Kalimantan Selatan</td>
 <td align="right">230</td>
 <td align="right">27.891</td>
-<td align="right">9.356.1</td>
+<td align="right">9.356</td>
 <td align="right">37.247</td>
 <td align="right">27.498</td>
 <td align="right">9.749</td>
 <td align="right">37.247</td>
-<td align="right">30.42</td>
+<td align="right">30</td>
 <td align="right">37.247</td>
 </tr>
 <tr class="odd">
 <td align="right">Kalimantan Timur</td>
 <td align="right">285</td>
 <td align="right">47.201</td>
-<td align="right">6.977.5</td>
+<td align="right">6.978</td>
 <td align="right">54.179</td>
 <td align="right">30.475</td>
 <td align="right">23.704</td>
 <td align="right">54.179</td>
-<td align="right">735.39</td>
+<td align="right">735</td>
 <td align="right">54.179</td>
 </tr>
 <tr class="even">
 <td align="right">Kalimantan Utara</td>
 <td align="right">40</td>
 <td align="right">6.214</td>
-<td align="right">4.326.3</td>
+<td align="right">4.326</td>
 <td align="right">10.541</td>
 <td align="right">8.881</td>
 <td align="right">1.659</td>
 <td align="right">10.541</td>
-<td align="right">23.13</td>
+<td align="right">23</td>
 <td align="right">10.541</td>
 </tr>
 <tr class="odd">
 <td align="right">Sulawesi Utara</td>
 <td align="right">110</td>
 <td align="right">9.506</td>
-<td align="right">5.193.5</td>
+<td align="right">5.194</td>
 <td align="right">14.699</td>
 <td align="right">11.611</td>
 <td align="right">3.088</td>
 <td align="right">14.699</td>
-<td align="right">105.51</td>
+<td align="right">106</td>
 <td align="right">14.699</td>
 </tr>
 <tr class="even">
 <td align="right">Sulawesi Tengah</td>
 <td align="right">121</td>
 <td align="right">81.438</td>
-<td align="right">8.024.1</td>
+<td align="right">8.024</td>
 <td align="right">89.463</td>
 <td align="right">60.184</td>
 <td align="right">29.278</td>
 <td align="right">89.463</td>
-<td align="right">10.477.26</td>
+<td align="right">10.477</td>
 <td align="right">89.463</td>
 </tr>
 <tr class="odd">
 <td align="right">Sulawesi Selatan</td>
 <td align="right">526</td>
 <td align="right">22.971</td>
-<td align="right">12.476.3</td>
+<td align="right">12.476</td>
 <td align="right">35.447</td>
 <td align="right">26.882</td>
 <td align="right">8.554</td>
 <td align="right">35.437</td>
-<td align="right">636.15</td>
+<td align="right">636</td>
 <td align="right">36.102</td>
 </tr>
 <tr class="even">
 <td align="right">Sulawesi Tenggara</td>
 <td align="right">141</td>
 <td align="right">24.712</td>
-<td align="right">3.247.2</td>
+<td align="right">3.247</td>
 <td align="right">27.959</td>
 <td align="right">14.461</td>
 <td align="right">13.499</td>
 <td align="right">27.959</td>
-<td align="right">2.495.79</td>
+<td align="right">2.496</td>
 <td align="right">27.959</td>
 </tr>
 <tr class="odd">
 <td align="right">Gorontalo</td>
 <td align="right">26</td>
 <td align="right">4.311</td>
-<td align="right">1.163.6</td>
+<td align="right">1.164</td>
 <td align="right">5.474</td>
 <td align="right">4.463</td>
 <td align="right">1.011</td>
 <td align="right">5.474</td>
-<td align="right">0.00</td>
+<td align="right">0</td>
 <td align="right">5.474</td>
 </tr>
 <tr class="even">
 <td align="right">Sulawesi Barat</td>
 <td align="right">34</td>
 <td align="right">2.062</td>
-<td align="right">234.7</td>
+<td align="right">235</td>
 <td align="right">2.297</td>
 <td align="right">1.939</td>
 <td align="right">357</td>
 <td align="right">2.297</td>
-<td align="right">1.07</td>
+<td align="right">1</td>
 <td align="right">2.297</td>
 </tr>
 <tr class="odd">
 <td align="right">Maluku</td>
 <td align="right">38</td>
 <td align="right">2.907</td>
-<td align="right">1.006.1</td>
+<td align="right">1.006</td>
 <td align="right">3.913</td>
 <td align="right">3.142</td>
 <td align="right">770</td>
 <td align="right">3.913</td>
-<td align="right">77.09</td>
+<td align="right">77</td>
 <td align="right">3.913</td>
 </tr>
 <tr class="even">
 <td align="right">Maluku Utara</td>
 <td align="right">35</td>
 <td align="right">1.129</td>
-<td align="right">490.5</td>
+<td align="right">491</td>
 <td align="right">1.619</td>
 <td align="right">1.370</td>
 <td align="right">250</td>
 <td align="right">1.619</td>
-<td align="right">14.82</td>
+<td align="right">15</td>
 <td align="right">1.619</td>
 </tr>
 <tr class="odd">
 <td align="right">Papua Barat</td>
 <td align="right">35</td>
 <td align="right">1.660</td>
-<td align="right">869.7</td>
+<td align="right">870</td>
 <td align="right">2.530</td>
 <td align="right">1.960</td>
 <td align="right">570</td>
 <td align="right">2.530</td>
-<td align="right">33.89</td>
+<td align="right">34</td>
 <td align="right">2.530</td>
 </tr>
 <tr class="even">
 <td align="right">Papua Barat Daya</td>
 <td align="right">5</td>
 <td align="right">1.610</td>
-<td align="right">697.3</td>
+<td align="right">697</td>
 <td align="right">2.308</td>
 <td align="right">1.382</td>
 <td align="right">925</td>
 <td align="right">2.308</td>
-<td align="right">2.00</td>
+<td align="right">2</td>
 <td align="right">2.308</td>
 </tr>
 <tr class="odd">
 <td align="right">Papua</td>
 <td align="right">19</td>
 <td align="right">17.194</td>
-<td align="right">6.506.3</td>
+<td align="right">6.506</td>
 <td align="right">23.700</td>
 <td align="right">17.909</td>
 <td align="right">5.791</td>
 <td align="right">23.700</td>
-<td align="right">3.85</td>
+<td align="right">4</td>
 <td align="right">23.700</td>
 </tr>
 <tr class="even">
 <td align="right">Papua Selatan</td>
 <td align="right">7</td>
 <td align="right">16.334</td>
-<td align="right">4.198.3</td>
+<td align="right">4.198</td>
 <td align="right">20.532</td>
 <td align="right">8.173</td>
 <td align="right">12.359</td>
 <td align="right">20.532</td>
-<td align="right">374.04</td>
+<td align="right">374</td>
 <td align="right">20.532</td>
 </tr>
 <tr class="odd">
 <td align="right">Papua Tengah</td>
 <td align="right">11</td>
 <td align="right">2.232</td>
-<td align="right">712.6</td>
+<td align="right">713</td>
 <td align="right">2.945</td>
 <td align="right">2.837</td>
 <td align="right">108</td>
 <td align="right">2.945</td>
-<td align="right">4.13</td>
+<td align="right">4</td>
 <td align="right">2.945</td>
 </tr>
 <tr class="even">
 <td align="right">Papua Pegunungan</td>
 <td align="right">4</td>
 <td align="right">110</td>
-<td align="right">43.7</td>
+<td align="right">44</td>
 <td align="right">154</td>
 <td align="right">108</td>
 <td align="right">46</td>
 <td align="right">154</td>
-<td align="right">0.00</td>
+<td align="right">0</td>
 <td align="right">154</td>
 </tr>
 <tr class="odd">
 <td align="right">Indonesia</td>
 <td align="right">32.193</td>
 <td align="right">3.623.411</td>
-<td align="right">2.135.045.0</td>
+<td align="right">2.135.045</td>
 <td align="right">5.758.456</td>
 <td align="right">4.580.838</td>
 <td align="right">1.176.769</td>
 <td align="right">5.757.607</td>
-<td align="right">56.651.81</td>
+<td align="right">56.652</td>
 <td align="right">5.778.026</td>
 </tr>
 </tbody>
@@ -2446,8 +2447,8 @@ tabel3_2_prov &lt;- tabel3_2_prov |&gt;
       .cols = c(Upah_Prod, PengPekLain_Prod, TotalPengPek_Prod, 
                 Upah_Lain, PengPekLain_Lain, TotalPengPek_Lain, 
                 TotalPengPek), 
-      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
-    )
+      .fns = ~ format(round(., 0), big.mark = &quot;.&quot;, decimal.mark = &quot;,&quot;, scientific = FALSE)
+      )
   )
 
 ## MATCH KODE &amp; NAMA PROV
@@ -2925,7 +2926,7 @@ tabel4_2_prov &lt;- tabel4_2_prov |&gt;
     across(
       .cols = c(Bahan_BakuPnl, Bakar_Listrik, Sewa_Gd, 
                 Jasa_Input, Peng_Lain, Total_Input), 
-      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+      .fns = ~ format(round(., 0), big.mark = &quot;.&quot;, decimal.mark = &quot;,&quot;, scientific = FALSE)
     )
   )
 
@@ -3365,7 +3366,7 @@ tabel5_2_prov &lt;- tabel5_2_prov |&gt;
     across(
       .cols = c(Barang_Prod, Listrik_Prod, Jasa_Prod, 
                 Selisih_Stok, Output_Lain, Total_Output), 
-      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+      .fns = ~ format(round(., 0), big.mark = &quot;.&quot;, decimal.mark = &quot;,&quot;, scientific = FALSE)
     )
   )
 
@@ -3803,7 +3804,7 @@ tabel6_2_prov &lt;- tabel6_2_prov |&gt;
     across(
       .cols = c(Total_Input, Total_Output, Nilai_Tambah_psr, 
                 Pajak, Nilai_Tambah), 
-      .fns = ~ scales::comma(., big.mark = &quot;.&quot;)
+      .fns = ~ format(round(., 0), big.mark = &quot;.&quot;, decimal.mark = &quot;,&quot;, scientific = FALSE)
     )
   )
 
