@@ -392,7 +392,8 @@ kable(tabel6_2_prov, align = "r")
 ## Export ke Excel
 
 ```{r export tabel kbli ke excel}
-wb = createWorkbook()
+#wb = createWorkbook()
+wb <- loadWorkbook("Rantab STPIM.xlsx")  # ambil dari file excel hasil running tabel_ibs23
 
 addWorksheet(wb, "Tabel 1.2")
 writeData(wb, "Tabel 1.2", "Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut Provinsi, 2023", startRow = 1, startCol = 1)

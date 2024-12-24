@@ -11,7 +11,7 @@
 
 <meta name="author" content="Ayu Paramudita" />
 
-<meta name="date" content="2024-12-23" />
+<meta name="date" content="2024-12-24" />
 
 <title>Draf Tabel STPIM 2023</title>
 
@@ -1570,7 +1570,7 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Draf Tabel STPIM 2023</h1>
 <h4 class="author">Ayu Paramudita</h4>
-<h4 class="date">2024-12-23</h4>
+<h4 class="date">2024-12-24</h4>
 
 </div>
 
@@ -4156,7 +4156,8 @@ kable(tabel6_2_prov, align = &quot;r&quot;)</code></pre>
 </div>
 <div id="export-ke-excel" class="section level2">
 <h2>Export ke Excel</h2>
-<pre class="r"><code>wb = createWorkbook()
+<pre class="r"><code>#wb = createWorkbook()
+wb &lt;- loadWorkbook(&quot;Rantab STPIM.xlsx&quot;)  # ambil dari file excel hasil running tabel_ibs23
 
 addWorksheet(wb, &quot;Tabel 1.2&quot;)
 writeData(wb, &quot;Tabel 1.2&quot;, &quot;Tabel 1.2 Jumlah Perusahaan dan Banyaknya Pekerja menurut Provinsi, 2023&quot;, startRow = 1, startCol = 1)
@@ -4181,6 +4182,7 @@ writeData(wb, &quot;Tabel 5.2&quot;, tabel5_2_prov, startRow = 3, startCol = 1)
 addWorksheet(wb, &quot;Tabel 6.2&quot;)
 writeData(wb, &quot;Tabel 6.2&quot;, &quot;Tabel 6.2 Nilai Tambah menurut Provinsi, 2023&quot;, startRow = 1, startCol = 1)
 writeData(wb, &quot;Tabel 6.2&quot;, tabel6_2_prov, startRow = 3, startCol = 1)
+
 
 # Menyimpan workbook ke file Excel
 saveWorkbook(wb, &quot;Rantab STPIM.xlsx&quot;, overwrite = TRUE)</code></pre>
